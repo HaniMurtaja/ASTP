@@ -1,0 +1,105 @@
+---
+import type { SectionObject } from '~/api/api';
+// Import Leaflet CSS
+import 'leaflet/dist/leaflet.css';
+import SectionWrapper from '../SectionWrapper.astro';
+
+export interface Props {
+  section: SectionObject;
+  id: string;
+}
+
+const { section, id } = Astro.props;
+const locale = Astro.currentLocale || 'ar';
+// ... rest of your existing frontmatter
+
+const formTitle =
+  section?.sectionables?.[1]?.sectionable?.title?.[locale] || section?.sectionables?.[1]?.sectionable?.title?.['ar'];
+
+let allFields = section?.sectionables?.[1]?.sectionable?.sectionables;
+
+let lastField = null;
+
+if (Array.isArray(allFields) && allFields.length > 0) {
+  // Get the last element without mutating the original array
+  lastField = allFields[allFields.length - 1];
+
+  // Create a new array without the last element
+  allFields = allFields.slice(0, allFields.length - 1);
+}
+---
+
+<SectionWrapper id={id}>
+<section class="grid items-end gap-24 md:grid-cols-2">
+      <div id="map-section" class="h-[340px] w-full rounded-t-3xl md:h-[570px]"></div>
+      <script is:inline data-astro-rerun>
+        function initMap() {
+          // Set the coordinates for the center of the map
+          const center = { lat: 41.0166065, lng: 28.8457625 };
+          // Create a new Google Maps object
+          const map = new google.maps.Map(document.getElementById('map-section'), {
+            center: center,
+            zoom: 18,
+          });
+          // Add a marker to the map
+          new google.maps.Marker({
+            position: center,
+            map,
+            icon: `${window.location.origin}/marker-logo.png`,
+          });
+        }
+      </script>
+      <script
+        defer
+        async
+        data-astro-rerun
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDFYFgyRlsgXYTsBdUAcRRvfIq1nycjPiI&callback=initMap"
+      ></script>
+      <div class="form-section">
+        <div class="py-2 text-4xl text-sec md:text-5xl">
+          <p class="">{formTitle?.split(' ')?.[0]}</p>
+          <p class="font-bold">
+            {formTitle?.split(' ')?.slice(1).join(' ')}
+          </p>
+        </div>
+
+        <form class="flex flex-col mt-5 gap-7">
+          <div class="grid grid-cols-1 gap-7 sm:grid-cols-2">
+            {
+              allFields?.slice(0, 2).map((data) => {
+                const filedName = data?.sectionable?.label?.[locale] || data?.sectionable?.label?.['ar'];
+                return (
+                  <input
+                    type="text"
+                    name={filedName}
+                    placeholder={filedName}
+                    class="rounded-md bg-[#F6F6F6] px-4 py-4 text-sm shadow-sm placeholder:text-base placeholder:text-black focus:outline-none"
+                  />
+                );
+              })
+            }
+          </div>
+
+          {
+            allFields?.slice(2).map((data, i) => {
+              const filedName = data?.sectionable?.label?.[locale] || data?.sectionable?.label?.['ar'];
+              return (
+                <input
+                  type="text"
+                  name={filedName}
+                  placeholder={filedName}
+                  class="rounded-md bg-[#F6F6F6] px-4 py-4 text-sm shadow-sm placeholder:text-base placeholder:text-black focus:outline-none"
+                />
+              );
+            })
+          }
+
+          <button
+            type="submit"
+            class="py-3 mb-5 text-white transition-all duration-300 rounded-md bg-main hover:bg-main/90"
+            >{lastField?.sectionable?.label?.[locale] || lastField?.sectionable?.label?.['ar']}</button
+          >
+        </form>
+      </div>
+    </section>
+</SectionWrapper>

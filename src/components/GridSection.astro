@@ -1,0 +1,82 @@
+---
+// NewsSection.astro
+import type { ImageMetadata } from "astro";
+
+import SectionWrapper from "./SectionWrapper.astro";
+import { formatCustomDate } from "~/utils/utils";
+import ImageWithFallback from "./ui/ImageWithFallback.astro";
+
+interface Props {
+
+  items?: Item[];
+  id: string;
+}
+
+const {  id } = Astro.props;
+
+interface Item {
+  title: string;
+  summary: string;
+  link?: string;
+  img: ImageMetadata;
+  category: string;
+  date: string;
+  subtitle?: string;
+}
+
+const { items }: { items?: Item[] } = Astro.props;
+---
+
+<SectionWrapper containerClass="mt-4" id={id}>
+  <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+    {
+      items?.map((item, index) => {
+        return (
+          <a
+            
+            href={item.link}
+            class={"bg-[#A3A5A933] [grid-auto-rows:20px]  break-inside-avoid block rounded-[20px]  relative group max-h-fit "}
+          >
+            <div class="relative overflow-hidden  max-h-[300px] lg:max-h-[250px] rounded-lg">
+              <ImageWithFallback
+                inferSize
+                src={item.img}
+                alt={index + "img"}
+                class={
+                  "w-full object-cover scale-110 group-hover:scale-[1.15] group-focus:scale-[1.15] ltr:group-hover:translate-x-0 ltr:group-focus:translate-x-0 [dir=ltr]:group-hover:translate-[0] duration-[300ms] transition-transform"
+                }
+              />
+            </div>
+     
+            <div class="flex flex-col gap-6 py-5 items-between  px-[33px]">
+              {item.title && <p class="font-[600] text-lg line-clamp-2">{item.title}</p>}
+              {item.subtitle && (
+                <p class="text-sm font-bold text-mainGray line-clamp-1">
+                  {item.subtitle}
+                </p>
+              )}
+              <p class={"text-base text-mainGray font-light line-clamp-5"}>
+                {item.summary}
+              </p>
+              <p
+                class={
+                  "text-xl font-medium mb-10 group-hover:bg-primary max-w-max group-hover:scale-105 group-hover:text-white group-hover:px-4 transition-all"
+                }
+              >
+                {/* {content.Violations.readMore} */}
+              </p>
+              {!item.date ? null : (
+                <p class="absolute text-sm text-mainGray bottom-5 text-opacity-80">
+                  {formatCustomDate(
+                    new Date(item.date),
+                    Astro.currentLocale || "ar"
+                  )}
+                </p>
+              )}
+            </div>
+          </a>
+        );
+      })
+    }
+  </div>
+</SectionWrapper>

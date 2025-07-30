@@ -1,0 +1,156 @@
+---
+import youtubeIcon from '~/assets/icons/youtube-icon.svg?raw';
+import noBg from '~/assets/images/no-bg.webp';
+import MediaCard from '~/components/MediaCard.astro';
+import type { CategoryObject, Sectionable, SectionObject } from '~/api/api';
+
+export type Props ={
+    section:SectionObject
+}
+
+
+  const locale = Astro.currentLocale || 'ar';
+const { section } = Astro.props;
+const category = section?.sectionables?.find((sectionable) => sectionable.sectionable_type === "App\\Models\\Category");
+
+if(!category) {
+return null;
+
+}
+const mediaPosts = ((category as  Sectionable)?.sectionable as CategoryObject)?.media_libraries?.filter(mediaPost=>mediaPost.type ==="VIDEO") || []
+
+if(!mediaPosts || mediaPosts.length === 0) {
+  return null;
+}
+
+function getYoutubeThumbnail(url) {
+  if(!url) return noBg;
+  const videoId = url.split('v=')[1]?.split('&')[0];
+  return `https://img.youtube.com/vi/${videoId}/0.jpg`;
+}
+
+const mediaPostsData = mediaPosts.map((mediaPost) => ({
+  img: mediaPost?.media?.find((media) => media.collection_name === "Media_Library_Thumbnails")?.original_url || (mediaPost.source_type==="LINK" ?getYoutubeThumbnail(mediaPost.link):noBg),
+  id: mediaPost?.id,
+  link: mediaPost?.link ? mediaPost.link : `/media/${mediaPost?.id}`,
+  title:mediaPost?.title[locale] || mediaPost?.title['ar'],
+}));
+
+---
+<div class="w-full py-28 bg-primary">
+  <div class="relative w-full main-padding text-start">
+    <div class="flex items-center justify-between w-full">
+      <div class="flex flex-col items-start gap-9">
+        <h2 class="text-green text-2xl xl:text-[64px] font-[600]">
+          {section.title[locale] || section.title['ar']} 
+
+        </h2>
+        <p class="text-[#EFF3F6] xl:text-2xl">{section.description[locale] || section.description['ar']}</p>
+      </div>
+
+      <a href="#" class="flex items-center justify-end scale-50 xl:scale-100">
+        <Fragment set:html={youtubeIcon} />
+      </a>
+    </div>
+
+    <!-- Mobile  -->
+    <div class="xl:hidden h-[500px] carousel-media-mobile mt-20 xl:mt-14">
+      {
+        mediaPostsData?.map((item) => {
+          return (
+            <div class={`carousel-cell h-full w-full lg:w-1/2 lg:pe-6`}>
+              <MediaCard {...item} />
+            </div>
+          );
+        })
+      }
+    </div>
+
+    <div class="hidden xl:block">
+      <!-- DESKTOP  -->
+      <div class="carousel-media mt-28">
+        {
+          Array.from({ length: mediaPostsData ? Math.ceil(mediaPostsData.length / 3) : 0 }).map((_, index) => {
+            const baseIndex = index * 3;
+            const isFirstSlide = index === 0;
+
+            return (
+              <div class="w-full carousel-cell">
+                {isFirstSlide ? (
+                  // First Slide - 1:3 Grid
+                  <div class="grid grid-cols-3 gap-10 min-h-[52rem] mx-8">
+                    {/* Left Column */}
+                    <div class="flex flex-col col-span-1 gap-10">
+                      {mediaPostsData[baseIndex] && (
+                        <div class="max-w-full h-1/2">
+                          <MediaCard {...mediaPostsData[baseIndex]} class="h-full" />
+                        </div>
+                      )}
+                      {mediaPostsData[baseIndex + 1] && (
+                        <div class="max-w-full h-1/2">
+                          <MediaCard {...mediaPostsData[baseIndex + 1]} class="h-full " />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Right Column */}
+                    <div class="h-full col-span-2 ">
+                      {mediaPostsData[baseIndex + 2] && <MediaCard {...mediaPostsData[baseIndex + 2]} class="h-full" />}
+                    </div>
+                  </div>
+                ) : (
+                  <div class="grid grid-flow-col-dense gap-10 min-h-[52rem]">
+                    {[0, 1, 2].map((offset) =>
+                      mediaPostsData[baseIndex + offset] ? (
+                        <div class="h-full">
+                          <MediaCard {...mediaPostsData[baseIndex + offset]} class="h-full" />
+                        </div>
+                      ) : null
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        }
+      </div>
+    </div>
+  </div>
+</div>
+{
+  mediaPosts.length > 3 && (
+  
+<script is:inline data-astro-rerun src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+<script data-astro-rerun is:inline>
+  new Flickity('.carousel-media', {
+    accessibility: true,
+    gutter: 10,
+    autoPlay: false,
+    freeScroll: false,
+    friction: 0.5,
+    groupCells: true,
+    initialIndex: 0,
+    lazyLoad: true,
+    prevNextButtons: true,
+    pageDots: false,
+    rightToLeft: document.dir === 'rtl',
+  });
+</script>
+
+<script is:inline data-astro-rerun src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+<script data-astro-rerun is:inline>
+  new Flickity('.carousel-media-mobile', {
+    accessibility: true,
+    gutter: 10,
+    autoPlay: false,
+    freeScroll: false,
+    friction: 0.5,
+    groupCells: true,
+    initialIndex: 0,
+    lazyLoad: true,
+    prevNextButtons: true,
+    pageDots: false,
+    rightToLeft: document.dir === 'rtl',
+  });
+</script>)
+}

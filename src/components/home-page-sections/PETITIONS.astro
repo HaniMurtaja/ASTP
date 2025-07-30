@@ -1,0 +1,250 @@
+---
+import { ExtractImagesFromMedia, getContentForLocale, getFormattedDate, prepareContentFromJsonOrHTMLString } from '~/utils/utils';
+import Action from './Action.astro';
+import type { CategoryObject, Sectionable } from '~/api/api';
+import { fetchCategoryPetitions } from '~/api';
+import ImageWithFallback from '../ui/ImageWithFallback.astro';
+
+interface Petition {
+  id: string;
+  title: string;
+  description: string;
+  signatures: number;
+  goal: number;
+  category: string;
+  iconColor: string;
+  gradientFrom: string;
+  gradientTo: string;
+}
+
+interface Props {
+  petitions: Petition[];
+  texts?: {
+    header: {
+      title: string;
+      subtitle: string;
+    };
+    petition: {
+      signatures: string;
+      goal: string;
+      signButton: string;
+    };
+    cta: {
+      title: string;
+      subtitle: string;
+    };
+  };
+}
+
+const { section  } = Astro.props;
+
+const locale = Astro.currentLocale!;
+const content = (await getContentForLocale(locale))?.petitions ;
+
+const allPetitionsLink = section?.sectionables?.find(
+  (sectionable) => sectionable.sectionable_type === 'App\\Models\\Action'
+);
+// Default texts (can be overridden for localization)
+
+const finalTexts =  {
+  header: {
+    title:section.title[locale] ,
+    subtitle: getFormattedDate(section.date)
+  },
+  petition: {
+    signatures:content.signatures,
+    goal: content.goal,
+    signButton: content.signButton
+  },
+    cta: {
+        title: content.cta.title,
+        subtitle: content.cta.subtitle
+    }
+
+};
+
+
+
+const category = section?.sectionables?.find((sectionable) => sectionable.sectionable_type === 'App\\Models\\Category');
+if (!category) {
+  return null;
+}
+let categoryPetitions =  [] ;
+
+if(!categoryPetitions || categoryPetitions.length === 0) {
+   categoryPetitions = (await fetchCategoryPetitions(6, locale, category.sectionable_id))?.data || [];
+}
+if(categoryPetitions.length > 3 && categoryPetitions.length < 6) {
+  categoryPetitions = categoryPetitions.slice(0, 3);
+}
+const petitions = categoryPetitions.map((petition) => ({
+  img: ExtractImagesFromMedia(petition.media)?.[0]?.original_url,
+  id: petition?.id,
+  uuid: petition?.uuid,
+  link: `/${locale}/petition/${petition?.slug}`,
+  title: petition?.title[locale] ,
+  desc: prepareContentFromJsonOrHTMLString(petition?.description[locale] , locale, true),
+  short_desc: prepareContentFromJsonOrHTMLString(
+     petition?.description[locale],
+    locale,
+    true
+  ).substring(0,200) + '...'
+}));
+
+
+// SVG icons for different categories
+
+
+const calculateProgress = (signatures: number, goal: number) => {
+  return Math.min((signatures / goal) * 100, 100);
+};
+---
+
+
+
+<section class="py-16 bg-gradient-to-br from-slate-50 to-blue-50">
+<section class="py-16 " style="background: hsl(var(--aw-color-bg-page));">
+  <div class="relative px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+    <!-- Background SVG Decorations -->
+    <div class="absolute inset-0 pointer-events-none max-w-screen overflow-x-clip">
+      <!-- Top left floating shapes -->
+     
+      
+      <!-- Top right geometric pattern -->
+      <svg class="absolute w-32 h-32 text-green-100 -right-10 top-2 opacity-20" viewBox="0 0 100 100" fill="none">
+        <path d="M20 20L80 20L80 80L20 80Z" stroke="hsl(151, 64%, 55%)" stroke-width="1" fill="none"/>
+        <path d="M30 30L70 30L70 70L30 70Z" stroke="hsl(151, 64%, 55%)" stroke-width="1" fill="none"/>
+        <path d="M40 40L60 40L60 60L40 60Z" stroke="hsl(151, 64%, 55%)" stroke-width="1" fill="none"/>
+        <circle cx="50" cy="50" r="5" fill="hsl(151, 64%, 55%)" opacity="0.5"/>
+      </svg>
+
+      <svg class="absolute text-green-100 transform rotate-90 w-96 h-96 -left-96 top-2 opacity-20" viewBox="0 0 100 100" fill="none">
+        <path d="M20 20L80 20L80 80L20 80Z" stroke="hsl(151, 64%, 55%)" stroke-width="1" fill="none"/>
+        <path d="M30 30L70 30L70 70L30 70Z" stroke="hsl(151, 64%, 55%)" stroke-width="1" fill="none"/>
+        <path d="M40 40L60 40L60 60L40 60Z" stroke="hsl(151, 64%, 55%)" stroke-width="1" fill="none"/>
+        <circle cx="50" cy="50" r="5" fill="hsl(151, 64%, 55%)" opacity="0.5"/>
+      </svg>
+      
+      <!-- Middle left wave pattern -->
+      <svg class="absolute w-24 h-40 top-1/2 left-5 opacity-15" viewBox="0 0 100 200" fill="none">
+        <path d="M10 0Q50 25 10 50T10 100T10 150T10 200" stroke="hsl(34, 74%, 36%)" stroke-width="3" fill="none"/>
+        <path d="M30 0Q70 25 30 50T30 100T30 150T30 200" stroke="hsl(34, 74%, 66%)" stroke-width="2" fill="none"/>
+      </svg>
+      
+      <!-- Bottom right scattered dots -->
+      <svg class="absolute w-40 h-40 bottom-20 right-10 opacity-20" viewBox="0 0 100 100" fill="none">
+        <circle cx="20" cy="20" r="3" fill="hsl(187, 100%, 15%)"/>
+        <circle cx="40" cy="15" r="2" fill="hsl(151, 64%, 55%)"/>
+        <circle cx="60" cy="25" r="4" fill="hsl(34, 74%, 36%)"/>
+        <circle cx="80" cy="20" r="2" fill="hsl(0, 84%, 62%)"/>
+        <circle cx="25" cy="40" r="2" fill="hsl(151, 64%, 55%)"/>
+        <circle cx="45" cy="45" r="3" fill="hsl(187, 100%, 15%)"/>
+        <circle cx="65" cy="40" r="2" fill="hsl(34, 74%, 66%)"/>
+        <circle cx="85" cy="45" r="3" fill="hsl(0, 84%, 62%)"/>
+        <circle cx="30" cy="65" r="4" fill="hsl(34, 74%, 36%)"/>
+        <circle cx="50" cy="70" r="2" fill="hsl(151, 64%, 55%)"/>
+        <circle cx="70" cy="65" r="3" fill="hsl(187, 100%, 15%)"/>
+        <circle cx="90" cy="70" r="2" fill="hsl(34, 74%, 66%)"/>
+        <circle cx="35" cy="85" r="2" fill="hsl(0, 84%, 62%)"/>
+        <circle cx="55" cy="90" r="3" fill="hsl(34, 74%, 36%)"/>
+        <circle cx="75" cy="85" r="2" fill="hsl(151, 64%, 55%)"/>
+      </svg>
+      
+      <!-- Bottom left abstract lines -->
+      <svg class="absolute opacity-25 bottom-10 left-20 w-28 h-28" viewBox="0 0 100 100" fill="none">
+        <path d="M10 10L90 30" stroke="hsl(187, 100%, 15%)" stroke-width="2"/>
+        <path d="M10 30L90 50" stroke="hsl(151, 64%, 55%)" stroke-width="1.5"/>
+        <path d="M10 50L90 70" stroke="hsl(34, 74%, 36%)" stroke-width="2"/>
+        <path d="M10 70L90 90" stroke="hsl(0, 84%, 62%)" stroke-width="1.5"/>
+        <circle cx="10" cy="10" r="2" fill="hsl(187, 100%, 15%)"/>
+        <circle cx="10" cy="30" r="2" fill="hsl(151, 64%, 55%)"/>
+        <circle cx="10" cy="50" r="2" fill="hsl(34, 74%, 36%)"/>
+        <circle cx="10" cy="70" r="2" fill="hsl(0, 84%, 62%)"/>
+      </svg>
+      
+      <!-- Floating petition icons -->
+      <svg class="absolute w-16 h-16 top-1/3 right-1/4 opacity-10 animate-bounce" style="animation-delay: 2s; animation-duration: 3s;" viewBox="0 0 100 100" fill="none">
+        <rect x="20" y="15" width="60" height="70" rx="5" stroke="hsl(187, 100%, 15%)" stroke-width="2" fill="none"/>
+        <line x1="30" y1="30" x2="70" y2="30" stroke="hsl(187, 100%, 15%)" stroke-width="1.5"/>
+        <line x1="30" y1="40" x2="70" y2="40" stroke="hsl(187, 100%, 15%)" stroke-width="1.5"/>
+        <line x1="30" y1="50" x2="60" y2="50" stroke="hsl(187, 100%, 15%)" stroke-width="1.5"/>
+        <circle cx="50" cy="65" r="8" stroke="hsl(187, 100%, 15%)" stroke-width="2" fill="none"/>
+        <path d="M45 65L48 68L55 61" stroke="hsl(187, 100%, 15%)" stroke-width="2" fill="none"/>
+      </svg>
+      
+      <!-- Another floating element -->
+      <svg class="absolute w-12 h-12 top-2/3 left-1/3 opacity-15 animate-pulse" style="animation-delay: 1s;" viewBox="0 0 100 100" fill="none">
+        <path d="M50 10L60 40L90 40L70 60L80 90L50 70L20 90L30 60L10 40L40 40Z" stroke="hsl(151, 64%, 55%)" stroke-width="2" fill="hsl(151, 64%, 55%)" opacity="0.3"/>
+      </svg>
+    </div>
+    <!-- Header -->
+    <div class="mb-12 text-center">
+      <h2 class="mb-4 text-4xl font-bold text-primary dark:text-white md:text-5xl" style="font-family: var(--aw-font-heading);" set:html={finalTexts.header.title}></h2>
+      <p class="max-w-3xl mx-auto text-xl text-gray-600">
+        {finalTexts.header.subtitle}
+      </p>
+    </div>
+
+    <!-- Petitions Grid -->
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+      {petitions.map((petition) => (
+        <div class="overflow-hidden transition-all duration-300 bg-white border border-gray-200 shadow-lg group rounded-2xl hover:shadow-2xl">
+          <div class="flex flex-col items-center justify-between h-full p-6">
+            <!-- Dynamic SVG Icon -->
+            {/* <div class="flex justify-center mb-4" set:html={getIconSVG(petition.category, 'primary')}></div> */}
+            <ImageWithFallback class="object-cover w-full h-48 mb-4 rounded-lg" src={petition.img} alt={petition.title} lazy inferSize />
+            <div class="mb-4 text-center">
+            {petition.signatures &&  <div class="mb-2 text-sm font-semibold" style="color: hsl(187, 100%, 15%);">
+                {petition.signatures.toLocaleString()} {finalTexts.petition.signatures}
+              </div>}
+              <h3 class="mb-3 text-xl font-bold text-black" style="font-family: var(--aw-font-heading);">{petition.title}</h3>
+              <p class="text-sm leading-relaxed text-gray-700">
+                {petition.short_desc}
+              </p>
+            </div>
+            
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex -space-x-2">
+                {/* <div class="w-8 h-8 border-2 border-white rounded-full" style="background: hsl(187, 100%, 15%);"></div>
+                <div class="w-8 h-8 border-2 border-white rounded-full" style="background: hsl(151, 64%, 55%);"></div>
+                <div class="w-8 h-8 border-2 border-white rounded-full" style="background: hsl(34, 74%, 36%);"></div> */}
+             { petition.signatures &&  <div class="flex items-center justify-center w-8 h-8 text-xs font-bold text-white border-2 border-white rounded-full" style="background: hsl(34, 74%, 66%);">
+                  +{Math.floor(petition.signatures / 1000)}K
+                </div>}
+              </div>
+           { petition.goal &&   <div class="text-sm text-gray-600">
+                {finalTexts.petition.goal} {petition.goal.toLocaleString()}
+              </div>}
+            </div>
+            
+            { petition.signatures && petition.goal && <div class="w-full h-2 mb-4 bg-gray-200 rounded-full">
+              <div 
+                class="h-2 rounded-full"
+                style={`width: ${calculateProgress(petition.signatures, petition.goal)}%; background: linear-gradient(to right, hsl(187, 100%, 15%), hsl(178, 100%, 32%));`}
+              ></div>
+            </div>}
+            
+            <a href={`/${locale}/petition/${petition.uuid}`} class="block w-full px-6 py-3 font-semibold text-center text-white transition-all duration-300 rounded-lg group-hover:shadow-lg hover:opacity-90" style="background: hsl(0, 84%, 62%); font-family: var(--aw-font-sans);">
+              {finalTexts.petition.signButton}
+            </a>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <!-- Call to Action -->
+    <div class="mt-16 text-center">
+      <div class="p-8 text-white rounded-2xl" style="background: linear-gradient(to right, hsl(187, 100%, 15%), hsl(178, 100%, 32%));">
+        <h3 class="mb-4 text-2xl font-bold md:text-3xl" style="font-family: var(--aw-font-heading);">{finalTexts.cta.title}</h3>
+        <p class="mb-6 text-lg opacity-90">
+          {finalTexts.cta.subtitle}
+        </p>
+        <div class="flex flex-col justify-center gap-4 sm:flex-row">
+     
+      
+          <Action section={allPetitionsLink}  containerClass="px-8 py-3 font-semibold text-white transition-colors duration-300 border-2 border-white rounded-lg hover:bg-white" style="font-family: var(--aw-font-sans);" onmouseover="this.style.color='hsl(187, 100%, 15%)'" onmouseout="this.style.color='white'"/>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

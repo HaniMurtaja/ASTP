@@ -1,0 +1,31 @@
+---
+import { Image } from 'astro:assets';
+import ImageWithFallback from './ui/ImageWithFallback.astro';
+
+const props = Astro.props;
+---
+
+<a
+  href={props.link}
+  class="relative flex flex-col items-start w-full gap-5 outline-none group"
+>
+  <div class="overflow-hidden rounded-[20px] w-full h-[350px]">
+    <ImageWithFallback
+      src={props.img}
+      inferSize
+      alt={props.id + "new"}
+      class={"w-full h-full rounded-[20px] object-cover group-focus:scale-110 group-hover:scale-110 transition-all duration-200"}
+      loading={"eager"}
+    />
+  </div>
+
+  <div class="flex items-center gap-2">
+    <p class="text-[#00000066] text-md">{props.date}</p>
+  </div>
+
+  <p class="text-xl font-[600] text-primary-light">{props.title}</p>
+
+  <div class="text-[#6A6A6A] text-lg line-clamp-2" set:html={props.short_desc}/>
+
+ 
+</a>

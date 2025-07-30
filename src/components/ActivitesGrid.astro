@@ -1,0 +1,78 @@
+---
+import content from "~/content/ar";
+import type { NewsCardProps } from "./LastNewsCard.astro";
+import newsImg from "../assets/images/news-img.png";
+import LastNewsCard from "./LastNewsCard.astro";
+
+const data: NewsCardProps[] = Array(8)
+  .fill(null)
+  .map(() => ({
+    img: newsImg,
+    id: 1,
+    link: "#",
+    title: "الأقصى يمر بأخطر مرحلة تاريخية والتفاعل مع الأحداث صادم",
+  }));
+---
+
+<div
+  class="text-center py-[90px] xl:py-[148px] main-padding relative w-full bg-gray-100 dark:bg-page"
+>
+  <h2 class="text-primary-light text-4xl xl:text-[64px] font-[600]">
+    {content.activity.title}
+  </h2>
+  <p class="xl:text-2xl mt-3 text-[#ABABAB] max-w-xl mx-auto line-clamp-2">
+    {content.activity.desc}
+  </p>
+
+  <div class="grid grid-flow-col mt-24 overflow-x-clip carousel-activities xl:mt-14">
+    {
+      data?.map((item) => {
+        return (
+          <div
+            class={`carousel-cell transition-all duration-300 w-full lg:w-1/2  xl:pe-6`}
+          >
+            <LastNewsCard {...item} />
+          </div>
+        );
+      })
+    }
+  </div>
+</div>
+
+
+<script  >
+  // Initialize Flickity that we installed using npm
+  import Flickity from "flickity";
+  import "flickity/css/flickity.css";
+  function initSwiper(){
+    
+       new Flickity(".carousel-activities", {
+        // options, defaults listed
+        accessibility: true,
+        gutter: 10,
+        autoPlay: false,
+        freeScroll: false,
+        friction: 0.5,
+        groupCells:true,
+        initialIndex: 0,
+        lazyLoad: true,
+        prevNextButtons: true,
+        pageDots: false,
+        rightToLeft: document.dir === "rtl",
+        on: {
+        ready: function() {
+          
+        },
+     
+      }
+        // wrapAround: true,
+        // contain: true,
+      });
+
+  }
+
+
+   // Re-initialize on view transitions
+   document.addEventListener('astro:page-load', initSwiper);
+  document.addEventListener('astro:after-swap', initSwiper);
+</script>

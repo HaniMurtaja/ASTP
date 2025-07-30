@@ -1,0 +1,441 @@
+---
+import { Icon } from 'astro-icon/components';
+import ToggleMenu from '~/components/common/ToggleMenu.astro';
+import ToggleTheme from '~/components/common/ToggleTheme.astro';
+// import searchIcon from "~/assets/svgs/search-icon.svg?raw";
+import { twMerge } from 'tailwind-merge';
+import { fetchLocales, fetchMainMenu } from '~/api';
+import searchIcon from '~/assets/icons/search-icon.svg?raw';
+import videoIcon from '~/assets/icons/video-icon.svg?raw';
+import type { CallToAction } from '~/types';
+import { trimSlash } from '~/utils/permalinks';
+import Logo from '../Logo.astro';
+// import worldIcon from "~/assets/icons/world-icon.svg?raw";
+import donateIcon from '~/assets/icons/donate-icon.svg?raw';
+import heartIcon from '~/assets/icons/heart-icon.svg?raw';
+import langaugeIcon from '~/assets/icons/language-icon.svg?raw';
+import { getContentForLocale } from '~/utils/utils';
+/*
+  Ensure you have access to the current locale.
+  Here we default to "ar" if Astro.currentLocale isn’t set.
+*/
+const locale = Astro.currentLocale;
+// Function to fetch category data from the API
+
+const menuData = (await fetchMainMenu(locale))?.data || [];
+// swap the order of the first two items
+// Transform the menu data to group children under their parents
+
+interface Link {
+  text?: string;
+  href?: string;
+  ariaLabel?: string;
+  icon?: string;
+}
+
+interface MenuLink extends Link {
+  links?: Array<MenuLink>;
+}
+
+export interface Props {
+  id?: string;
+  links?: Array<MenuLink>;
+  actions?: Array<CallToAction>;
+  isSticky?: boolean;
+  isDark?: boolean;
+  isFullWidth?: boolean;
+  showToggleTheme?: boolean;
+  showRssFeed?: boolean;
+  position?: string;
+}
+
+const {
+  id = 'header',
+  links = [],
+  socialLinks = [],
+  actions = [],
+  isSticky = false,
+  isDark = false,
+  showToggleTheme = false,
+  showRssFeed = false,
+  position = 'center',
+} = Astro.props;
+// Map the API data into our desired structure,
+
+const currentPath = `/${trimSlash(new URL(Astro.url).pathname)}`;
+// detect if current path is not only / with some optional hash
+
+// using the proper language field based on `locale`
+const mainMenu = [
+  ...(!menuData.length
+    ? []
+    : menuData
+        .filter((menu) => !menu.parent_id)
+        .sort((a, b) => a.position - b.position)
+        .map((menu) => ({
+          id: menu.id,
+          text: menu.title[locale] || menu.title.ar,
+          href: menu.category_id ? `/${locale}#category_${menu.category_id}` : menu.url,
+          children: (menu.children || []).map((sub) => ({
+            id: sub.id,
+            text: sub.title[locale] || sub.title.ar,
+            href: sub.category_id ? `/${locale}/category/${sub.category_id}` : sub.url,
+          })),
+        }))),
+];
+const currentLocale = Astro.currentLocale || 'ar';
+const content = await getContentForLocale(currentLocale);
+const localesObjects: { title: string; lang_code: string; direction: string }[] = (await fetchLocales(locale))
+  ?.data || [
+  { title: 'ar', label: 'العربية', direction: 'rtl' },
+  { title: 'en', label: 'English', direction: 'ltr' },
+  { title: 'tr', label: 'Turkish', direction: 'ltr' },
+  { title: 'fr', label: 'French', direction: 'ltr' },
+  { title: 'de', label: 'German', direction: 'ltr' },
+  { title: 'es', label: 'Spanish', direction: 'ltr' },
+  { title: 'pt', label: 'Portuguese', direction: 'ltr' },
+  { title: 'it', label: 'Italian', direction: 'ltr' },
+  { title: 'ru', label: 'Russian', direction: 'ltr' },
+  { title: 'zh', label: 'Chinese', direction: 'ltr' },
+  { title: 'ja', label: 'Japanese', direction: 'ltr' },
+  { title: 'fa', label: 'Persian', direction: 'rtl' },
+  { title: 'ms', label: 'Malay', direction: 'ltr' },
+  { title: 'ur', label: 'Urdu', direction: 'rtl' },
+];
+
+console.log({localesObjects},{depth:null})
+
+const currentLocaleLabel = 
+  localesObjects.find((locale) => locale.lang_code?.toLocaleLowerCase() === currentLocale?.toLocaleLowerCase())?.title
+;
+const otherLocales = localesObjects.filter(
+  locale => locale.lang_code?.toLowerCase() !== currentLocale.toLowerCase()
+);
+---
+
+<style>
+  /* Ensure each menu item is relatively positioned for absolute dropdowns */
+  .menu-item {
+    position: relative;
+  }
+
+  /* Dropdown menus (the inner <ul>) are absolutely positioned and overlay the nav */
+  .submenu-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 50;
+    background: white;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    white-space: nowrap; /* Prevent text wrapping */
+  }
+
+  /* Prevent text wrapping for all links and summary items */
+  .menu-link,
+  .submenu-link,
+  .menu-summary {
+    white-space: nowrap;
+  }
+</style>
+<div class="relative z-40 hidden w-full px-24 py-8 max-width xl:block bg-page">
+  <div class="flex flex-col items-center justify-between w-full gap-4 xl:flex-row xl:gap-0">
+    <div class="flex items-center gap-5">
+      <button
+        class="relative flex items-center justify-center w-40 h-8 gap-2 px-4 overflow-hidden rounded-full outline-cta bg-cta group"
+      >
+        <div
+          class="transition-all group-focus:absolute group-hover:absolute group-focus:end-1/2 group-hover:end-1/2 rtl:group-focus:-translate-x-1/2 rtl:group-hover:-translate-x-1/2 group-focus:translate-x-1/2 group-hover:translate-x-1/2"
+        >
+          <Fragment set:html={videoIcon} />
+        </div>
+        <div class="w-[2px] h-3/5 bg-white/20 group-focus:hidden group-hover:hidden">&nbsp;</div>
+        <p
+          class="font-medium text-white transition-all whitespace-nowrap group-focus:absolute ltr:group-focus:-translate-x-40 rtl:group-focus:translate-x-40 group-hover:absolute group-hover:-translate-x-40"
+        >
+          {content.header.live}
+        </p>
+      </button>
+
+      <div class="max-w-[32ch] w-[75ch] h-8 border-primary-light border rounded-full relative">
+        <input
+          type="text"
+          placeholder={content.header.search}
+          class="h-full w-full outline-none placeholder:text-[#ABABAB] text-xs ps-9 rounded-full"
+        />
+
+        <div class="absolute -translate-y-1/2 start-2 top-1/2 text-green">
+          <Fragment set:html={searchIcon} />
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between w-full gap-5 xl:w-auto xl:justify-center">
+      <button
+        class="outline-none overflow-hidden relative group hidden xl:flex h-8 bg-cta w-[8.8rem] rounded-full items-center justify-center gap-2"
+      >
+        <div
+          class="w-8 scale-105 z-10 opacity-0 group-focus:opacity-100 group-hover:opacity-100 transition-all translate-y-3 group-focus:-translate-y-3 group-hover:-translate-y-3 h-8 items-center justify-center absolute start-3 -bottom-5 rotate-[20deg]"
+        >
+          <Fragment set:html={heartIcon} class:list={['w-full h-full']} />
+        </div>
+
+        <div
+          class="w-8 scale-50 z-0 delay-75 opacity-0 group-focus:opacity-100 group-hover:opacity-100 transition-all translate-y-2 group-focus:-translate-y-2 group-hover:-translate-y-2 h-8 items-center justify-center absolute start-7 -bottom-5 rotate-[20deg]"
+        >
+          <Fragment set:html={heartIcon} class:list={['w-full h-full']} />
+        </div>
+        <div
+          class="transition-all duration-100 group-hover:absolute group-focus:-translate-x-1 group-hover:-translate-x-1"
+        >
+          <Fragment set:html={donateIcon} />
+        </div>
+        <div class="h-2/3 w-[1px] group-focus:hidden group-hover:hidden bg-white/30"></div>
+        <p
+          class="font-medium text-white transition-all group-focus:absolute group-hover:absolute group-focus:-translate-x-28 group-hover:-translate-x-28"
+        >
+          {content.header.donate}
+        </p>
+      </button>
+      <details class="relative z-50 grid text-xs place-content-center place-items-center">
+        <summary
+          class="grid max-w-[40ch] cursor-pointer text-end text-opacity-70 hover:underline dark:text-muted capitalize font-bold text-base"
+        >
+          {currentLocaleLabel}
+        </summary>
+        <div
+          class="absolute right-0 w-40 mt-2 text-center bg-white border border-gray-200 rounded shadow-lg max-w-24 dark:border-gray-700 dark:bg-gray-800"
+        >
+          {
+            otherLocales.map((locale, index) => (
+              <a
+                class="block px-4 py-2 text-sm font-bold text-gray-700 capitalize hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                href={`/${locale.lang_code}`}
+              >
+                {locale.title}
+              </a>
+            ))
+          }
+        </div>
+      </details>
+      <button
+        class="w-full h-8 px-6 text-white transition-all rounded-full max-w-fit bg-primary-light xl:w-auto hover:text-white focus:outline-primary focus:bg-primary hover:bg-primary"
+        >{content.header.login}</button
+      >
+      <button
+        class="w-full h-8 px-6 transition-all border rounded-full max-w-fit xl:w-auto border-primary-light outline-primary text-primary-light focus:bg-primary hover:bg-primary focus:border-primary focus:text-white hover:border-primary hover:text-white"
+        >{content.header.register}</button
+      >
+      <ToggleTheme iconClass="w-6 h-6 lg:w-6 xl:w-7 lg:w-6 xl:h-7 lg:inline-block" />
+    </div>
+  </div>
+</div>
+<header
+  class:list={[
+    { sticky: isSticky, relative: !isSticky, dark: isDark },
+    'top-0 z-40 has-[.expanded]:z-[99] lg:z-[39] mx-auto w-full flex-none  transition-[opacity] intersect-once intersect-quarter intercept-no-queue motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade ease-in-out bg-primary dark:bg-dark ',
+  ]}
+  {...isSticky ? { 'data-aw-sticky-header': true } : {}}
+  {...id ? { id } : {}}
+>
+  <div
+    class:list={[
+      'relative mx-auto w-full px-5 sm:px-12 lg:px-28 py-3 text-default bg-primary dark:bg-dark ',
+      {
+        'xl:flex xl:justify-between': position !== 'center',
+      },
+      {
+        'xl:flex xl:items-center xl:justify-start gap-8': position === 'center',
+      },
+    ]}
+  >
+    <div class:list={[{ 'mr-auto rtl:ml-auto rtl:mr-0': position === 'right' }, 'flex justify-between ']}>
+      <a class="z-40 flex items-center xl:min-w-[20rem]" href={`/${Astro.currentLocale}`}>
+        <Logo />
+      </a>
+      <div class="z-10 flex items-center xl:hidden">
+        <ToggleMenu />
+      </div>
+    </div>
+    <nav
+      class="items-center hidden w-full pt-32 overflow-visible md:pt-8 text-start text-default xl:flex bg-primary dark:bg-dark"
+      aria-label="Main navigation"
+    >
+      <ul
+        class="flex flex-col flex-wrap text-3xl font-medium tracking-[0.01rem] md:justify-center xl:flex-row lg:items-center lg:text-[0.9375rem]"
+      >
+        {
+          mainMenu.map((cat) => (
+            <li class="relative text-white">
+              {cat.children?.length > 0 ? (
+                <details
+                  class="select-none group"
+                  role="menuitem"
+                  on:toggle={(e) => {
+                    const detailsEl = e.currentTarget as HTMLDetailsElement;
+                    const summaryEl = detailsEl.querySelector('summary');
+                    if (summaryEl) {
+                      summaryEl.setAttribute('aria-expanded', detailsEl.open ? 'true' : 'false');
+                    }
+                  }}
+                >
+                  <summary
+                    role="button"
+                    aria-haspopup="menu"
+                    aria-expanded="false"
+                    class={twMerge(
+                      'hover:text-link flex cursor-pointer  items-center justify-between gap-2 whitespace-nowrap px-2 py-2 text-start hover:opacity-80 hover:underline focus:opacity-80 focus:underline dark:hover:bg-gray-700 dark:hover:text-white md:justify-evenly md:text-center',
+                      currentPath.startsWith(cat.href || ' ') ? 'active' : ''
+                    )}
+                  >
+                    <a href={cat.href} title={cat.text}>
+                      {cat.text}
+                    </a>
+                    <span class="transition-transform duration-200 transform group-open:rotate-180">
+                      <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </span>
+                  </summary>
+                  <ul
+                    role="menu"
+                    class="z-[9999] mt-1  bg-opacity-90 brightness-150 whitespace-nowrap rounded bg-primary dark:bg-dark text-start indent-4 shadow-md dark:shadow-[rgba(1,1,1,.5)] lg:absolute lg:top-[120%] lg:min-w-[100%] lg:indent-0"
+                  >
+                    {cat.children.map((sub) => (
+                      <li role="none">
+                        <a
+                          role="menuitem"
+                          class="block px-5 py-2 border-b border-b-white border-opacity-70 hover:text-link whitespace-nowrap text-start hover:opacity-80 hover:underline focus:opacity-80 focus:underline dark:hover:bg-gray-700 lg:text-center"
+                          href={sub.href}
+                        >
+                          {sub.text}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              ) : (
+                <a
+                  role="menuitem"
+                  class={twMerge(
+                    'block px-5 py-2 hover:text-link whitespace-nowrap text-start hover:opacity-80 hover:underline focus:opacity-80 focus:underline dark:hover:bg-gray-700 md:text-center',
+                    currentPath.startsWith(cat.href || ' ') ? 'active' : '',
+                    cat.href == '/' ? 'root-link' : ''
+                  )}
+                  href={cat.href}
+                >
+                  {cat.text}
+                </a>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <div
+      class:list={[
+        { 'ml-auto rtl:ml-0 rtl:mr-auto': position === 'left' },
+        'fixed z-50 bottom-0 md:bottom-8 end-0 hidden w-full items-center justify-end p-3 bg-primary  dark:bg-dark text-page rtl:end-auto rtl:right-0',
+      ]}
+    >
+      <div class="flex items-center justify-between w-full lg:w-auto">
+        <div class="flex">
+          {
+            showToggleTheme && (
+              <div class="flex items-center gap-2 me-4">
+                {socialLinks?.length && false ? (
+                  <ul class="flex md:ml-4 rtl:-mr-2 rtl:ml-0 rtl:md:ml-0 rtl:md:mr-4">
+                    {socialLinks.map(({ ariaLabel, href, text, icon }) => (
+                      <li class="flex items-center">
+                        <a
+                          class="inline-flex items-center justify-center p-1 text-sm rounded-lg text-muted hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-700"
+                          aria-label={ariaLabel}
+                          href={href}
+                        >
+                          {icon && <Icon name={icon} class="w-5 h-5" />}
+                          <Fragment set:html={text} />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  ''
+                )}
+                {/* <button class="inline-flex items-center p-4 text-sm rounded-lg text-muted hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-700">
+                <Fragment set:html={searchIcon} />
+              </button> */}
+                <ToggleTheme
+                  class="p-4"
+                  iconClass="w-6 h-6 hover:bg-primary-light rounded-full lg:w-6 xl:w-7 lg:w-6 xl:h-7 lg:inline-block text-white"
+                />
+                {/* {showRssFeed && (
+                <a
+                  class="inline-flex items-center rounded-lg p-2.5 text-sm text-muted hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-700"
+                  aria-label="RSS Feed"
+                  href={getAsset('/rss.xml')}
+                >
+                  <Icon name="tabler:rss" class="w-5 h-5" />
+                </a>
+              )} */}
+              </div>
+            )
+          }
+        </div>
+
+        <div class="flex items-center justify-between w-full gap-5 xl:w-auto xl:justify-center">
+          <details class="relative z-50 grid text-xs place-content-center place-items-center">
+            <summary
+              class="grid max-w-[40ch] cursor-pointer text-end text-opacity-70 hover:underline capitalize font-bold text-base"
+            >
+              {currentLocaleLabel}
+            </summary>
+            <div
+              class="absolute right-0 w-40 mt-2 text-center bg-white border border-gray-200 rounded shadow-lg bottom-8 max-w-24 dark:border-gray-700 dark:bg-gray-800"
+            >
+              {
+                otherLocales.map((locale, index) => (
+                  <a
+                    class="block px-4 py-2 text-sm font-bold text-gray-700 capitalize hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                    href={`/${locale.lang_code}`}
+                  >
+                    {locale.title}
+                  </a>
+                ))
+              }
+            </div>
+          </details>
+          <div class="flex gap-2">
+            <button
+              class="w-full h-8 px-6 text-white transition-all rounded-full whitespace-nowrap max-w-fit bg-primary-light focus:underline hover:underline xl:w-auto hover:text-white focus:outline-primary focus:bg-primary hover:bg-primary"
+              >{content.header.login}</button
+            >
+            <button
+              class="w-full h-8 px-6 text-white transition-all border rounded-full whitespace-nowrap max-w-fit xl:w-auto border-primary-light outline-primary text-primary-light focus:bg-primary hover:bg-primary focus:border-primary focus:text-white hover:border-primary hover:text-white"
+              >{content.header.register}</button
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Client-side script for "click away" functionality -->
+<script type="module" data-astro-rerun>
+  document.addEventListener('click', (event) => {
+    document.querySelectorAll('details.group[open]').forEach((openDetails) => {
+      if (!openDetails.contains(event.target)) {
+        openDetails.removeAttribute('open');
+        const summaryEl = openDetails.querySelector('summary');
+        if (summaryEl) {
+          summaryEl.setAttribute('aria-expanded', 'false');
+        }
+      }
+    });
+  });
+</script>

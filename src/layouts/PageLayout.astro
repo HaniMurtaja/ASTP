@@ -1,0 +1,61 @@
+---
+import Layout from '~/layouts/Layout.astro';
+import Header from '~/components/widgets/Header.astro';
+
+import { headerData as HeaderWithNoContent } from '~/navigation';
+import type { MetaData } from '~/types';
+import TopHeader from '~/components/widgets/TopHeader.astro';
+import { getContentForLocale } from '~/utils/utils';
+
+export interface Props {
+  metadata?: MetaData;
+  footer?: string;
+  main?: string;
+}
+
+const headerData = HeaderWithNoContent(await getContentForLocale(Astro.currentLocale));
+
+const { metadata } = Astro.props;
+const mainContent = await Astro.slots.render('main');
+const footerContent = await Astro.slots.render('footer');
+---
+
+<Layout metadata={metadata}>
+  <slot name="announcement">
+    <div class="xl:hidden">
+      <!-- <Announcement /> -->
+      <TopHeader />
+    </div>
+  </slot>
+  <slot name="header">
+    <Header {...headerData} isSticky showRssFeed showToggleTheme />
+  </slot>
+  <main class="relative bg-page">
+    <slot name="main">
+      <Fragment set:html={mainContent} />
+    </slot>
+  </main>
+  <slot name="footer">
+    <Fragment set:html={footerContent} />
+    <script is:inline>
+      document.addEventListener('astro:page-load', () => {
+        const hash = window.location.hash;
+        if (hash) {
+          const element = document.querySelector(hash);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      });
+      window.addEventListener('hashchange', () => {
+        const hash = window.location.hash;
+        if (hash) {
+          const element = document.querySelector(hash);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      });
+    </script>
+  </slot>
+</Layout>

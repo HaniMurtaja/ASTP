@@ -1,0 +1,22 @@
+{
+  "name": "Parliamentarians for Jerusalem and Palestine Association",
+  "short_name": "PJPA",
+  "description": "Uniting global parliamentarians in support of Palestinian rights and the establishment of an independent state with Jerusalem as its capital.",
+  "start_url": "/",
+  "lang": "ar",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

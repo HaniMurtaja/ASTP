@@ -1,0 +1,466 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+
+import { fetchCategoryPetitions, fetchCountries, fetchPage, fetchPetition } from '~/api';
+import { ExtractImagesFromMedia, formatCustomDate, getContentForLocale, prepareContentFromJsonOrHTMLString } from '~/utils/utils';
+import { Icon } from 'astro-icon/components';
+import MAIN_FOOTER from '~/components/home-page-sections/MAIN_FOOTER.astro';
+import Footer from '~/components/widgets/Footer.astro';
+import { footerData as FooterWithNoContent } from '~/navigation';
+
+import Dropdown from '~/components/ui/Dropdown.astro';
+import { parliamant_types_list } from '~/content/parliamantTypes.ts';
+import PhoneInput from '~/components/ui/PhoneInput.astro';
+import ImageWithFallback from '~/components/ui/ImageWithFallback.astro';
+const locale = Astro.currentLocale || 'ar';
+const postId = Astro.params.petitionId;
+if (!postId) return Astro.redirect(`/${locale}/notfound`, 404);
+const { data: petition } = await fetchPetition(postId, locale);
+if (!petition) return Astro.redirect(`/${locale}/notfound`, 404);
+
+const relatedPetitions = await fetchCategoryPetitions(12, locale, `${petition.category?.id}`);
+const content = await getContentForLocale(locale);
+const metadata = {
+  title: content.meta.title,
+  description: content.meta.description,
+  ignoreTitleTemplate: true,
+};
+const homePage = (await fetchPage(1, locale)).data;
+const pageFooter = homePage?.sections.find((section) => section.component === 'MAIN_FOOTER');
+const FooterComponent = pageFooter ? MAIN_FOOTER : Footer;
+const FooterProps = pageFooter ? { section: pageFooter } : FooterWithNoContent(content);
+const parliamantTypes = parliamant_types_list;
+const countries_list = (await fetchCountries(Astro.currentLocale || 'en'))?.data;
+
+const finalTexts =  {
+ 
+  petition: {
+    signatures:content.petitions.signatures,
+    goal: content.petitions.goal,
+    signButton: content.petitions.signButton
+  },
+    cta: {
+        title: content.petitions.cta.title,
+        subtitle: content.petitions.cta.subtitle
+    }
+
+};
+const form_translations = content.signature;
+const confirmedSignatures =
+  petition?.parliament_petition_signatures
+    ?.filter((signature) => signature.status === 'CONFIRMED')
+    .sort((a, b) => b.id - a.id)
+    .map((signature) => signature.parliament_id) || [];
+    
+const parlimitariansToShow =
+  petition.parliaments?.filter((parliament) => confirmedSignatures?.includes(parliament.id)) || [];
+---
+
+<Layout metadata={metadata}>
+  <Fragment slot="main">
+    <div class="relative z-10 mx-4 rounded-md lg:mx-28 max-h-fit overflow-clip" data-cat-id={petition?.category?.id}>
+      <div class="container px-4 pt-10 pb-5 mx-auto md:px-20">
+        <div class="flex items-center justify-between">
+         <div class="flex items-center gap-2 ">
+           <div
+              id="category-link"
+              class="z-10 grid w-16 h-16 px-4 rounded-lg place-items-center bg-primary dark:bg-primary-light"
+            >
+              <Icon name="tabler:bookmark" class="w-full h-full text-white" />
+            </div>
+          {petition?.category?.parent &&   <a
+            class="flex items-center gap-4 text-2xl dark:text-white"
+            title={petition?.category?.title[locale || 'ar']}
+            href={`/${locale}/petition/category/${petition?.category?.parent.slug}`}
+          >
+            <p class="text-3xl font-bold">{petition?.category?.parent.title[locale || 'ar']} </p>
+          </a>
+          <span class="text-3xl font-bold"><span class="rtl:hidden">\</span><span class="ltr:hidden">/</span></span>
+          }
+          
+           <a
+            class="flex items-center gap-4 text-2xl dark:text-white"
+            title={petition?.category?.title[locale || 'ar']}
+            href={`/${locale}/petition/category/${petition?.category?.slug}`}
+          >
+           
+            <p class="text-3xl font-bold">{petition?.category?.title[locale || 'ar']}</p>
+          </a>
+         </div>
+          <div class="flex items-center justify-between px-4 py-2 mt-4 mb-6 rounded-md ring-2 ring-primary dark:bg-gray-700">
+         <div class="flex flex-col items-center gap-2">
+           <div class="text-4xl font-bold text-primary dark:text-primary-light" 
+           >{confirmedSignatures.length}/10000</div>
+           <div class="text-lg font-medium text-gray-600 dark:text-gray-300" >
+             {content.petitions.signatures}
+           </div>
+         </div>
+       </div>
+        </div>
+      </div>
+    </div>
+    <div class="grid z-10 relative grid-cols-1 gap-6 pt-4 pb-10 mx-auto lg:grid-cols-[3fr,1fr] max-w-fit lg:mx-24">
+      <div class="container grid grid-cols-1 gap-6 pt-4 pb-10 mx-auto max-w-fit lg:mx-24">
+        <div class="container flex flex-col items-start justify-between gap-4 px-4 pt-10 lg: lg:flex-row lg:gap-8">
+          <div
+            class="prose max-w-[100ch] md:prose-lg lg:prose-xl pros-p:text-base prose-a:text-primary prose-img:rounded-xl dark:text-white dark:text-opacity-80"
+          >
+            <h1 class="dark:text-white dark:text-opacity-80">
+              {petition?.title[locale || 'ar']}
+            </h1>
+            <div class="text-primary dark:text-primary-light">
+              <span>{content.petitions.published_at}</span>
+              <span class="text-black dark:text-white">{formatCustomDate(petition?.published_at, locale)}</span>
+              <span>{content.petitions.expires_at}</span>
+              <span class="text-black dark:text-white">{formatCustomDate(petition?.end_date || petition?.date, locale)}</span>
+            </div>
+            {
+              !petition.description ? null : (
+                <Fragment set:html={prepareContentFromJsonOrHTMLString(petition.description[locale || 'ar'])} />
+              )
+            }
+          </div>
+        </div>
+      </div>
+      <div class="sticky max-h-[80vh] overflow-hidden top-[10rem] mx-4">
+        <h1 class="text-3xl font-bold text-primary dark:text-white">{content.petitions.latestSignatures}</h1>
+        <div class="lg:min-h-[60vh] max-h-[70vh] overflow-y-auto mt-8 ">
+          {
+            parlimitariansToShow.map((parliament, i) => {
+              const country = countries_list.find((country) => country.id === parliament.lc_country_id );
+              return (
+                <div class="flex items-center justify-between gap-4 py-2 border-b">
+                  <div class="flex items-center justify-center font-bold text-black dark:text-white">{Math.abs(i - parlimitariansToShow.length)}</div>
+                  <div class="w-full px-4 py-2 font-medium text-start">{parliament.name}</div>
+                  {country && <div class="flex-col items-center justify-center px-4 text-center flex-inline ">
+                    <span>{country?.flag_emoji.utf8}</span>
+                    <span>{country?.translations.find((translation) => translation.locale === locale)?.name}</span>
+                  </div>}
+                </div>
+              );
+            })
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- name , email , signature (signature pad / image) -->
+    <div class="container relative z-10 grid grid-cols-1 gap-10 pb-20 mx-auto lg:grid-cols-[1fr,2fr] text-start">
+      <form id="petition_form" class="grid max-w-lg grid-cols-1 gap-4 min-w-96 place-content-start">
+        <!-- Name Field -->
+        <div>
+          <label for="name" id="nameLabel" class="block mb-2 text-sm font-medium text-gray-700 dark:text-white">
+            {content.signature.fields.name.label}
+          </label>
+          <input
+            type="text"
+            id="name"
+            name="parliament_name"
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 dark:bg-gray-600 dark:text-white focus:ring-primary-light focus:border-transparent"
+            placeholder={content.signature.fields.name.placeholder}
+          />
+        </div>
+        <!-- Email Field -->
+        <div>
+          <label for="email" id="emailLabel" class="block mb-2 text-sm font-medium text-gray-700 dark:text-white">
+            {content.signature.fields.email.label}
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="parliament_email"
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 dark:bg-gray-600 dark:text-white focus:ring-primary-light focus:border-transparent"
+            placeholder={content.signature.fields.email.placeholder}
+          />
+        </div>
+        <!-- Phone Field -->
+        <PhoneInput
+          name="phone_number"
+          locale={locale}
+          prefixName="phone_prefix"
+          label="رقم الهاتف"
+          countries={countries_list}
+        />
+        <!-- Country Field -->
+        <Dropdown
+          name="country_id"
+          label="الدولة"
+          placeholder="اختر الدولة"
+          items={countries_list.map((item) => ({
+            label: `${item.flag_emoji.utf8} ${item.translations.find((translation) => translation.locale === locale)?.name || item.official_name}`,
+            id: item.id,
+          }))}
+          valueProp="id"
+          itemProp="label"
+        />
+        <!-- ParlimantType -->
+        <Dropdown
+          name="parliament_type"
+          label={'نوع البرلمان'}
+          placeholder="اختر نوع البرلمان"
+          items={parliamantTypes[locale].map((item) => ({ label: item }))}
+          valueProp="label"
+          itemProp="label"
+        />
+        <div>
+          <!--  agree -->
+          <input type="hidden" name="parliament_agree_checkbox" value="true" />
+
+          <!-- Validation Messages -->
+
+          <div class="flex flex-col gap-2">
+            <label for="statusActive">
+              <input type="radio" name="status" value="active" id="statusActive" checked />
+
+              <span class="me-2">{content.signature.fields.currentParliamentDesignation.label}</span>
+            </label>
+            <label for="statusInActive">
+              <input type="radio" name="status" value="inactive" id="statusInActive" />
+              <span class="me-2">{content.signature.fields.previousParliamentDesignation.label}</span>
+            </label>
+          </div>
+          <!-- Submit Button -->
+          <input type="hidden" name="locale_lang_code" value={locale} />
+          <input type="hidden" name="petition_uuid" value={petition.uuid} />
+          <div id="validationMessages" class="space-y-2 min-h-4"></div>
+          <button
+          type="submit"
+          id="submitBtn"
+          class="w-full px-4 py-2 mt-4 font-medium text-white transition-colors rounded-md bg-primary hover:brightness-75 focus:outline-none focus:ring-2 focus:ring-primary-light focus:ring-offset-2"
+          >
+          {content.signature.actions.submit}
+        </button>
+        </div>
+      </form>
+      <div class="grid grid-cols-1 gap-2 p-4 rounded-lg lg:grid-cols-2 bg-primary ">
+         {relatedPetitions.data.slice(0,2).map((petition) => ({
+  img: ExtractImagesFromMedia(petition.media)?.[0]?.original_url,
+  id: petition?.id,
+  uuid: petition?.uuid,
+  link: `/${locale}/petition/${petition?.slug}`,
+  title: petition?.title[locale] ,
+  desc: prepareContentFromJsonOrHTMLString(petition?.description[locale] , locale, true),
+  short_desc: prepareContentFromJsonOrHTMLString(
+     petition?.description[locale],
+    locale,
+    true
+  ).substring(0,200) + '...'
+})).map((petition) => (
+        <div class="overflow-hidden transition-all duration-300 bg-white border border-gray-200 shadow-lg group rounded-2xl hover:shadow-2xl">
+          <div class="flex flex-col items-center justify-between h-full p-6">
+            <!-- Dynamic SVG Icon -->
+            {/* <div class="flex justify-center mb-4" set:html={getIconSVG(petition.category, 'primary')}></div> */}
+            <ImageWithFallback class="object-cover w-full h-48 mb-4 rounded-lg" src={petition.img} alt={petition.title} lazy inferSize />
+            <div class="mb-4 text-center">
+       
+              <h3 class="mb-3 text-xl font-bold text-black" style="font-family: var(--aw-font-heading);">{petition.title}</h3>
+              <p class="text-sm leading-relaxed text-gray-700">
+                {petition.short_desc}
+              </p>
+            </div>
+            
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex -space-x-2">
+                {/* <div class="w-8 h-8 border-2 border-white rounded-full" style="background: hsl(187, 100%, 15%);"></div>
+                <div class="w-8 h-8 border-2 border-white rounded-full" style="background: hsl(151, 64%, 55%);"></div>
+                <div class="w-8 h-8 border-2 border-white rounded-full" style="background: hsl(34, 74%, 36%);"></div> */}
+             { petition.signatures &&  <div class="flex items-center justify-center w-8 h-8 text-xs font-bold text-white border-2 border-white rounded-full" style="background: hsl(34, 74%, 66%);">
+                  +{Math.floor(petition.signatures / 1000)}K
+                </div>}
+              </div>
+           { petition.goal &&   <div class="text-sm text-gray-600">
+                {finalTexts.petition.goal} {petition.goal.toLocaleString()}
+              </div>}
+            </div>
+            <a href={`/${locale}/petition/${petition.uuid}`} class="block w-full px-6 py-3 font-semibold text-center text-white transition-all duration-300 rounded-lg group-hover:shadow-lg hover:opacity-90" style="background: hsl(0, 84%, 62%); font-family: var(--aw-font-sans);">
+              {finalTexts.petition.signButton}
+            </a>
+          </div>
+        </div>
+      ))}
+      </div>
+    </div>
+    <script is:inline data-astro-rerun define:vars={{form_translations}}>
+      window.signature_translations = form_translations
+    </script>
+    <script is:inline data-astro-rerun>
+document.addEventListener('astro:page-load', function() {
+  // --- Helper functions ---
+
+  async function fetchSignPetition(formData, token = '123') {
+    const url = 'https://api.lp4q.org/api/petitions/sign-petition';
+    // ensure agreement checkbox is set
+    formData.set('parliament_agree_checkbox', '1');
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        Authorization: 'Bearer ' + token
+      },
+      body: formData
+    });
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error('Sign-petition failed: ' + response.status + ' – ' + text);
+    }
+    return response.json();
+  }
+
+  function setCookie(name, value, days = 365) {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + days*24*60*60*1000);
+    document.cookie = name + '=' + encodeURIComponent(value) +
+                      ';expires=' + expires.toUTCString() + ';path=/;SameSite=Strict';
+  }
+
+  function getCookie(name) {
+    const nameEQ = name + '=';
+    const parts = document.cookie.split(';');
+    for (let part of parts) {
+      part = part.trim();
+      if (part.indexOf(nameEQ) === 0) {
+        return decodeURIComponent(part.substring(nameEQ.length));
+      }
+    }
+    return null;
+  }
+
+  function getTranslation(key, fallback = '') {
+    return (window.signature_translations && window.signature_translations[key]) || fallback;
+  }
+
+  function showValidationMessage(message, isError = true) {
+    const container = document.getElementById('validationMessages');
+    if (!container) return;
+    container.innerHTML = `
+      <div class="p-4 rounded-md ${isError ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-green-50 text-primary border border-green-200'}">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            ${ isError
+              ? '<svg class="w-5 h-5 text-red-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>'
+              : '<svg class="w-5 h-5 text-green-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>'
+            }
+          </div>
+          <div class="ml-3">
+            <p class="text-sm font-medium">${message}</p>
+          </div>
+        </div>
+      </div>
+    `;
+    container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function clearValidationMessage() {
+    const container = document.getElementById('validationMessages');
+    if (container) container.innerHTML = '';
+  }
+
+  function showThankYouMessage(userName) {
+    const formEl = document.getElementById('petition_form');
+    if (!formEl) return;
+    const msg = getTranslation('thank_you_message', `Thank you ${userName}! Your signature has been submitted.`);
+    const already = getTranslation('already_signed_message', 'You have already signed this petition.');
+    const recorded = getTranslation('signature_recorded', 'Your signature has been recorded and will be included in our petition.');
+    const thankYouDiv = document.createElement('div');
+    thankYouDiv.className = 'w-full py-12 mx-auto text-center  dark:bg-primary rounded-lg';
+    thankYouDiv.innerHTML = `
+      <div class="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-green-100 rounded-full ring-primary-light ring-2" >
+        <svg class="w-8 h-8 text-primary-light" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+      </div>
+      <h3 class="mb-2 text-xl font-semibold text-gray-900 dark:text-white">${msg}</h3>
+      <p class="mb-6 text-gray-600 dark:text-white">${already}</p>
+      <div class="text-sm text-gray-500 dark:text-white">
+        <p>${recorded}</p>
+      </div>
+    `;
+    formEl.parentNode.replaceChild(thankYouDiv, formEl);
+  }
+
+  function checkIfAlreadySigned() {
+    const signed = getCookie('petition_signed');
+    const name = getCookie('petition_signer_name');
+    if (signed === 'true' && name) {
+      showThankYouMessage(name);
+      return true;
+    }
+    return false;
+  }
+
+  // --- Form logic ---
+
+  const formEl = document.getElementById('petition_form');
+  if (!formEl) throw new Error('Could not find #petition_form');
+
+  if (!checkIfAlreadySigned()) {
+    formEl.addEventListener('submit', async function(event) {
+      event.preventDefault();
+      clearValidationMessage();
+
+      const data = new FormData(formEl);
+      // Pull values
+      const petitionUuid    = data.get('petition_uuid');
+      const name            = data.get('parliament_name');
+      const email           = data.get('parliament_email');
+      const parliamentType  = data.get('parliament_type');
+      const countryId       = data.get('country_id');
+      const phoneNumber     = data.get('phone_number');
+      const phonePrefix     = data.get('phone_prefix');
+      const status          = data.get('status');
+
+      // Basic validation
+      if (!petitionUuid || !name || !email || !parliamentType || !countryId || !phoneNumber || !phonePrefix || !status) {
+        showValidationMessage(getTranslation('validation_error', 'Please fill out all fields.'));
+        return;
+      }
+
+      // Email format
+      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRe.test(email)) {
+        showValidationMessage(getTranslation('email_validation_error', 'Please enter a valid email address.'));
+        return;
+      }
+
+      // Disable button
+      const btn = formEl.querySelector('button[type="submit"]');
+      const originalText = btn ? btn.textContent : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = getTranslation('submitting', 'Submitting...');
+      }
+
+      try {
+        await fetchSignPetition(data);
+        // success
+        setCookie('petition_signed', 'true', 365);
+        setCookie('petition_signer_name', name);
+        showThankYouMessage(name);
+      } catch (err) {
+        console.error(err);
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
+        let message = getTranslation('generic_error', 'Oops! Something went wrong. Please try again.');
+        if (err.message.includes('400')) {
+          message = getTranslation('validation_server_error', 'Please check your information and try again.');
+        } else if (err.message.includes('422')) {
+          message = getTranslation('duplicate_signature_error', 'This signature has already been submitted.');
+        } else if (err.message.includes('500')) {
+          message = getTranslation('server_error', 'Server error. Please try again later.');
+        }
+        showValidationMessage(message);
+      }
+    });
+  }
+});
+</script>
+   
+  </Fragment>
+ <Fragment slot="footer">
+    <FooterComponent {...FooterProps} />
+  </Fragment>
+</Layout>

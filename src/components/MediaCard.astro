@@ -1,0 +1,37 @@
+---
+import { Image } from 'astro:assets';
+import playIcon from "../assets/icons/play-icon.svg?raw";
+import ImageWithFallback from './ui/ImageWithFallback.astro';
+
+const props = Astro.props;
+---
+
+<a
+  href={props.link}
+  class="w-full h-full rounded-[20px] relative outline-none group block overflow-hidden"
+>
+  <ImageWithFallback
+    loading={"eager"}
+    inferSize
+    src={props.img}
+    alt={props.id + "-media"}
+    class={"absolute group-hover:brightness-50 group-focus:brightness-50 inset-0 rounded-[20px] group-focus:scale-110 group-hover:scale-110 transition-all duration-200 object-cover w-full object-top h-full"}
+  />
+
+  <div
+    class="absolute w-16 h-16 transition-all translate-x-1/2 -translate-y-1/2 rtl:-translate-x-1/2 end-1/2 top-1/2 group-focus:scale-150 group-hover:scale-150"
+  >
+    <Fragment set:html={playIcon} class:list={["w-full h-full"]} />
+  </div>
+  <!-- title on the video that appears when the user focus or hovers the card  -->
+  <div
+    class="absolute w-full bottom-0 start-0 h-16 bg-primary/50 rounded-[20px] opacity-0 group-focus:opacity-100 group-hover:opacity-100  group-focus:scale-100 group-hover:scale-100 transition-all duration-200"
+  > 
+    <div class="absolute flex items-end justify-start w-full h-full p-8 bg-black/10 backdrop:blur-lg">
+      <h2 class="text-white text-2xl font-[600] text-center">
+        {props.title}
+      </h2>
+    </div>
+  </div>
+  <!-- title on the video that appears when the user focus or hovers the card  -->
+</a>

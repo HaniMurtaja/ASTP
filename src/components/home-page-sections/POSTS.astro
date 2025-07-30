@@ -1,0 +1,95 @@
+---
+import { prepareContentFromJsonOrHTMLString } from '~/utils/utils';
+import SectionWrapper from '../SectionWrapper.astro';
+import extraLogo from '~/assets/icons/footer-extra-icon.svg?raw';
+import ImageWithFallback from '../ui/ImageWithFallback.astro';
+
+const locale = Astro.currentLocale || 'ar';
+const { section } = Astro.props;
+---
+
+<article class="relative min-h-fit posts-section">
+  <div class="fixed bottom-0 z-10 hidden xl:block end-0 ltr:-scale-x-100">
+    <Fragment set:html={extraLogo} />
+  </div>
+  <div class="p-8 lg:p-16 lg:pt-24 xl:pt-32 bg-page">
+    <h1 class="text-primary-light capitalize text-2xl pt-16 xl:text-[64px] font-[600]">
+      {section.title?.[locale] || section.title?.['ar']}
+    </h1>
+    <p
+      class="xl:text-2xl mt-3 capitalize text-secondary text-opacity-75 dark:text-white brightness-50 max-w-[110ch] [word-spacing:.5rem] pt-16 line-clamp-7"
+    >
+      {section.description?.[locale] || section.description?.['ar']}
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 gap-5 p-4 lg:p-16 lg:grid-cols-2 xl:grid-cols-2">
+    {
+      section.sectionables.map(({ sectionable }) => {
+        const { title, description, slug, id, short_description, media } = sectionable;
+        const prunedDescription = prepareContentFromJsonOrHTMLString(description?.[locale] || description?.['ar']);
+        const prunedShortDescription =
+          prepareContentFromJsonOrHTMLString(short_description?.[locale] || description?.[locale]).substring(0, 70) +
+          '...';
+        return (
+          <SectionWrapper id={slug}>
+            {!title ? null : (
+              <h2 class="text-primary-light capitalize text-xl xl:text-5xl font-[600]">
+                {title?.[locale] || title?.['ar']}
+              </h2>
+            )}
+            {!prunedShortDescription ? null : (
+              <div class="xl:text-2xl mt-3 capitalize text-[#ABABAB] max-w-xl  line-clamp-5" set:html={prunedShortDescription}>
+                
+              </div>
+            )}
+            {!media?.[0] ? null : (
+              <div class="relative overflow-hidden max-h-[300px] lg:max-h-[250px] rounded-lg">
+                <ImageWithFallback
+                  inferSize
+                  src={media?.find((media) => media.collection_name === 'Post_images')?.original_url}
+                  alt={id + 'img'}
+                  class={
+                    'w-full object-contain scale-110 group-hover:scale-110 group-focus:scale-110 ltr:group-hover:translate-x-0 ltr:group-focus:translate-x-0 [dir=ltr]:group-hover:translate-[0] duration-[300ms] transition-transform'
+                  }
+                />
+              </div>
+            )}
+            <div
+              class="w-full my-16 prose prose-emerald md:prose-lg lg:prose-xl dark:text-white dark:brightness-90 xl:prose-2xl text-balance md:max-w-lg lg:max-w-xl xl:max-w-2xl"
+              set:html={prunedDescription}
+            />
+          </SectionWrapper>
+        );
+      })
+    }
+  </div>
+</article>
+<style>
+  .posts-section {
+    .prose {
+      ul,
+      ol,
+      dl {
+        list-style: circle;
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(72ch, 1fr));
+        li {
+          display: list-item;
+          margin-left: 1rem;
+          padding-left: 1rem;
+          text-align: start;
+          text-wrap-style: balance;
+          position: relative;
+          &::marker {
+            color: hsla(var(--aw-color-primary-light) / var(--tw-text-opacity, 1));
+            font-size: 1.5rem;
+            position: absolute;
+            left: -1rem;
+          }
+        }
+      }
+    }
+  }
+</style>

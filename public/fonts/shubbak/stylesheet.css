@@ -1,0 +1,104 @@
+@font-face {
+    font-family: 'Shubbak';
+    src: url('/fonts/shubbak/Shubbak-Black.eot');
+    src: url('/fonts/shubbak/Shubbak-Black.eot?#iefix') format('embedded-opentype'),
+        url('/fonts/shubbak/Shubbak-Black.woff2') format('woff2'),
+        url('/fonts/shubbak/Shubbak-Black.woff') format('woff'),
+        url('/fonts/shubbak/Shubbak-Black.ttf') format('truetype'),
+        url('/fonts/shubbak/Shubbak-Black.svg#Shubbak-Black') format('svg');
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Shubbak';
+    src: url('/fonts/shubbak/Shubbak-ExtraLight.eot');
+    src: url('/fonts/shubbak/Shubbak-ExtraLight.eot?#iefix') format('embedded-opentype'),
+        url('/fonts/shubbak/Shubbak-ExtraLight.woff2') format('woff2'),
+        url('/fonts/shubbak/Shubbak-ExtraLight.woff') format('woff'),
+        url('/fonts/shubbak/Shubbak-ExtraLight.ttf') format('truetype'),
+        url('/fonts/shubbak/Shubbak-ExtraLight.svg#Shubbak-ExtraLight') format('svg');
+    font-weight: 200;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Shubbak';
+    src: url('/fonts/shubbak/Shubbak-Medium.eot');
+    src: url('/fonts/shubbak/Shubbak-Medium.eot?#iefix') format('embedded-opentype'),
+        url('/fonts/shubbak/Shubbak-Medium.woff2') format('woff2'),
+        url('/fonts/shubbak/Shubbak-Medium.woff') format('woff'),
+        url('/fonts/shubbak/Shubbak-Medium.ttf') format('truetype'),
+        url('/fonts/shubbak/Shubbak-Medium.svg#Shubbak-Medium') format('svg');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Shubbak';
+    src: url('/fonts/shubbak/Shubbak-Regular.eot');
+    src: url('/fonts/shubbak/Shubbak-Regular.eot?#iefix') format('embedded-opentype'),
+        url('/fonts/shubbak/Shubbak-Regular.woff2') format('woff2'),
+        url('/fonts/shubbak/Shubbak-Regular.woff') format('woff'),
+        url('/fonts/shubbak/Shubbak-Regular.ttf') format('truetype'),
+        url('/fonts/shubbak/Shubbak-Regular.svg#Shubbak-Regular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Shubbak';
+    src: url('/fonts/shubbak/Shubbak-Light.eot');
+    src: url('/fonts/shubbak/Shubbak-Light.eot?#iefix') format('embedded-opentype'),
+        url('/fonts/shubbak/Shubbak-Light.woff2') format('woff2'),
+        url('/fonts/shubbak/Shubbak-Light.woff') format('woff'),
+        url('/fonts/shubbak/Shubbak-Light.ttf') format('truetype'),
+        url('/fonts/shubbak/Shubbak-Light.svg#Shubbak-Light') format('svg');
+    font-weight: 300;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Shubbak';
+    src: url('/fonts/shubbak/Shubbak-Bold.eot');
+    src: url('/fonts/shubbak/Shubbak-Bold.eot?#iefix') format('embedded-opentype'),
+        url('/fonts/shubbak/Shubbak-Bold.woff2') format('woff2'),
+        url('/fonts/shubbak/Shubbak-Bold.woff') format('woff'),
+        url('/fonts/shubbak/Shubbak-Bold.ttf') format('truetype'),
+        url('/fonts/shubbak/Shubbak-Bold.svg#Shubbak-Bold') format('svg');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Shubbak';
+    src: url('/fonts/shubbak/Shubbak-ExtraBold.eot');
+    src: url('/fonts/shubbak/Shubbak-ExtraBold.eot?#iefix') format('embedded-opentype'),
+        url('/fonts/shubbak/Shubbak-ExtraBold.woff2') format('woff2'),
+        url('/fonts/shubbak/Shubbak-ExtraBold.woff') format('woff'),
+        url('/fonts/shubbak/Shubbak-ExtraBold.ttf') format('truetype'),
+        url('/fonts/shubbak/Shubbak-ExtraBold.svg#Shubbak-ExtraBold') format('svg');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Shubbak';
+    src: url('/fonts/shubbak/Shubbak-SemiBold.eot');
+    src: url('/fonts/shubbak/Shubbak-SemiBold.eot?#iefix') format('embedded-opentype'),
+        url('/fonts/shubbak/Shubbak-SemiBold.woff2') format('woff2'),
+        url('/fonts/shubbak/Shubbak-SemiBold.woff') format('woff'),
+        url('/fonts/shubbak/Shubbak-SemiBold.ttf') format('truetype'),
+        url('/fonts/shubbak/Shubbak-SemiBold.svg#Shubbak-SemiBold') format('svg');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+

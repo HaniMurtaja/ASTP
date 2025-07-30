@@ -1,0 +1,48 @@
+---
+import type { ImageMetadata } from 'astro';
+import { getImage, inferRemoteSize } from 'astro:assets';
+import noBg from '~/assets/images/no-bg.webp';
+
+type Props = {
+  src?: string | ImageMetadata;
+  alt: string;
+  width?: number;
+  height?: number;
+  [key: string]: any;
+};
+
+const { src, alt, width, height, ...attrs } = Astro.props as Props;
+
+let imageResult;
+if (!src) {
+  // No source provided: use local fallback
+  imageResult = await getImage({ src: noBg });
+} else if (typeof src !== 'string') {
+  // src is an imported ImageMetadata (local), use directly
+  imageResult = await getImage({ src });
+} else {
+  try {
+    // src is a remote URL string: infer size then optimize
+    const { width: remoteW, height: remoteH } = await inferRemoteSize(src);
+    imageResult = await getImage({
+      src,
+      width: width ?? remoteW,
+      height: height ?? remoteH,
+    });
+  } catch {
+    // On error (e.g. 404), fall back to local image
+    imageResult = await getImage({ src: noBg });
+  }
+}
+
+// Destructure the optimized image result
+const { attributes, src: optimizedSrc, srcSet } = imageResult;
+---
+<!-- Render with optimized attributes and fallback handling -->
+<img
+  {...attributes}
+  src={optimizedSrc}
+  srcset={srcSet.attribute}
+  alt={alt}
+  {...attrs}
+/>

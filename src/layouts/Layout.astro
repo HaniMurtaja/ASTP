@@ -1,0 +1,69 @@
+---
+import '~/assets/styles/tailwind.css';
+
+import CommonMeta from '~/components/common/CommonMeta.astro';
+import Favicons from '~/components/Favicons.astro';
+import CustomStyles from '~/components/CustomStyles.astro';
+import ApplyColorMode from '~/components/common/ApplyColorMode.astro';
+import Metadata from '~/components/common/Metadata.astro';
+import SiteVerification from '~/components/common/SiteVerification.astro';
+import Analytics from '~/components/common/Analytics.astro';
+import BasicScripts from '~/components/common/BasicScripts.astro';
+
+import { ClientRouter } from 'astro:transitions';
+
+import type { MetaData as MetaDataType } from '~/types';
+import { fetchLocales } from '~/api';
+const currentLocale = Astro.currentLocale;
+
+let currentLocaleObject: { title: string; direction: 'ltr' | 'rtl'; lang_code: string } | null = null;
+let localesObjects ;
+try {
+  localesObjects = await fetchLocales(currentLocale);
+
+  currentLocaleObject = localesObjects.data?.find(
+    (locale) => (locale.lang_code as string).toLocaleLowerCase() === Astro.currentLocale?.toLocaleLowerCase()
+  );
+} catch (e) {
+  console.log(e);
+  currentLocaleObject = null;
+}
+
+// Comment the line below to disable View Transitions
+
+export interface Props {
+  metadata?: MetaDataType;
+}
+
+const { metadata = {} } = Astro.props;
+---
+
+<!doctype html>
+<html
+  lang={currentLocale}
+  dir={currentLocaleObject ? currentLocaleObject.direction : currentLocale === 'ar' ? 'rtl' : 'ltr'}
+  class="2xl:text-[20px] bg-slate-800 dark:bg-page -z-50 relative"
+>
+  <head>
+    <CommonMeta />
+    <Favicons />
+    <CustomStyles />
+    <ApplyColorMode />
+    <Metadata {...metadata} />
+    <SiteVerification />
+    <Analytics />
+
+    <!-- Comment the line below to disable View Transitions -->
+    <ClientRouter fallback="swap" />
+  </head>
+
+  <body class="antialiased tracking-tight bg-transparent text-default isolate">
+    <script is:inline data-astro-rerun src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+    <script define:vars={{ localesObjects }}>
+      window.locales = localesObjects;
+    </script>
+    <slot />
+
+    <BasicScripts />
+  </body>
+</html>

@@ -1,0 +1,34 @@
+---
+export const partial = true;
+
+import { fetchCategoryPosts } from '~/api';
+import GridSection from '~/components/GridSection.astro';
+import { ExtractImagesFromMedia, prepareContentFromJsonOrHTMLString } from '~/utils/utils';
+// src/pages/api/grid-partial.astro
+
+const page = new URL(Astro.request.url).searchParams.get('page');
+const locale = Astro.currentLocale || 'ar';
+const currentSlug = Astro.params?.category_slug;
+const posts = await fetchCategoryPosts(page ? { page: Number(page), per_page: 12 } : 12, locale, currentSlug);
+
+const currentCategory = posts?.data?.[0]?.category || {
+  title: { [Astro.currentLocale as string]: 'Category' },
+  id: 0,
+};
+
+const props = {
+  id: currentCategory.id,
+  title: currentCategory.title[locale] || currentCategory.title['ar'],
+  linkTitle: 'Read All', // replace with localized text as needed
+  items: posts?.data?.map((post) => ({
+    category: post.category.title?.[locale],
+    title: String(post.title?.[locale]),
+    summary:prepareContentFromJsonOrHTMLString( String(post.short_description?.[locale]) || post.description[locale],locale,true).substring(0,200)+'...',
+    img: ExtractImagesFromMedia(post.media)?.[0]?.original_url ?? '',
+    link: `/${Astro.currentLocale}/post/${post.id}`,
+    date: post.created_at,
+  })),
+} as const;
+---
+
+<GridSection {...props} />

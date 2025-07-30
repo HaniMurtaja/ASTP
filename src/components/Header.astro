@@ -1,0 +1,129 @@
+---
+import content from "~/content/ar";
+import videoIcon from "../assets/icons/video-icon.svg?raw";
+import searchIcon from "../assets/icons/search-icon.svg?raw";
+// import worldIcon from "../assets/icons/world-icon.svg?raw";
+import heartIcon from "../assets/icons/heart-icon.svg?raw";
+import donateIcon from "../assets/icons/donate-icon.svg?raw";
+import langaugeIcon from "../assets/icons/language-icon.svg?raw";
+---
+
+<div class="main-padding w-full max-width">
+  <div
+    class="flex flex-col xl:flex-row gap-4 xl:gap-0 items-center justify-between w-full"
+  >
+    <div class="flex items-center gap-5">
+      <button
+        class="flex items-center gap-2 w-[160px] outline-[#F04F4E] bg-[#F04F4E] rounded-full relative justify-center overflow-hidden h-10 group"
+      >
+        <div
+          class="group-focus:absolute group-hover:absolute group-focus:end-1/2 group-hover:end-1/2 group-focus:-translate-x-1/2 group-hover:-translate-x-1/2 transition-all"
+        >
+          <Fragment set:html={videoIcon} />
+        </div>
+        <div
+          class="h-5 w-[2px] bg-white/20 group-focus:hidden group-hover:hidden"
+        >
+        </div>
+        <p
+          class="text-white font-medium group-focus:absolute group-focus:-translate-x-40 group-hover:absolute group-hover:-translate-x-40 transition-all"
+        >
+          {content.header.live}
+        </p>
+      </button>
+
+      <button
+        class="xl:hidden flex items-center bg-primary justify-center h-11 w-11 rounded-full transition-all focus:-translate-y-[2px] hover:-translate-y-[2px]"
+      >
+        <Fragment set:html={langaugeIcon} />
+      </button>
+
+      <div
+        class="w-[23vw] hidden xl:flex h-10 border-primary-light border rounded-full relative"
+      >
+        <input
+          type="text"
+          placeholder={content.header.search}
+          class="h-full w-full outline-none placeholder:text-[#ABABAB] text-xs ps-9 rounded-full"
+        />
+
+        <div class="absolute start-2 top-1/2 -translate-y-1/2">
+          <Fragment set:html={searchIcon} />
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="flex items-center gap-5 w-full xl:w-auto justify-between xl:justify-center"
+    >
+      <button
+        class="outline-none overflow-hidden relative group hidden xl:flex h-10 bg-[#F04F4E] w-[8.8rem] rounded-full items-center justify-center gap-2"
+      >
+        <div
+          class="w-10 scale-105 z-10 opacity-0 group-focus:opacity-100 group-hover:opacity-100 transition-all translate-y-3 group-focus:-translate-y-3 group-hover:-translate-y-3 h-10 items-center justify-center absolute start-3 -bottom-5 rotate-[20deg]"
+        >
+          <Fragment set:html={heartIcon} class:list={["w-full h-full"]} />
+        </div>
+
+        <div
+          class="w-10 scale-50 z-0 delay-75 opacity-0 group-focus:opacity-100 group-hover:opacity-100 transition-all translate-y-2 group-focus:-translate-y-2 group-hover:-translate-y-2 h-10 items-center justify-center absolute start-7 -bottom-5 rotate-[20deg]"
+        >
+          <Fragment set:html={heartIcon} class:list={["w-full h-full"]} />
+        </div>
+        <div
+          class="group-hover:absolute group-focus:-translate-x-1 group-hover:-translate-x-1 transition-all duration-100"
+        >
+          <Fragment set:html={donateIcon} />
+        </div>
+        <div
+          class="h-2/3 w-[1px] group-focus:hidden group-hover:hidden bg-white/30"
+        >
+        </div>
+        <p
+          class="text-white font-medium group-focus:absolute group-hover:absolute group-focus:-translate-x-28 group-hover:-translate-x-28 transition-all"
+        >
+          {content.header.donate}
+        </p>
+      </button>
+
+      <button
+        class="hidden outline-primary xl:flex items-center bg-primary focus:outline-primary-light focus:bg-primary-light hover:bg-primary-light justify-center h-10 w-10 rounded-full transition-all"
+      >
+        <Fragment set:html={langaugeIcon} />
+      </button>
+
+      <button
+        class="bg-primary-light w-full xl:w-auto h-10 px-6 rounded-full text-white transition-all focus:outline-primary focus:bg-primary hover:bg-primary"
+        >{content.header.login}</button
+      >
+      <button
+        class="h-10 px-6 rounded-full w-full xl:w-auto border border-primary-light outline-primary text-primary-light transition-all focus:bg-primary hover:bg-primary focus:border-primary focus:text-white hover:border-primary hover:text-white"
+        >{content.header.login}</button
+      >
+    </div>
+
+    <div class="w-full flex items-center gap-2 xl:hidden h-10">
+      <div class="w-2/3 relative h-full">
+        <input
+          type="text"
+          placeholder={content.header.search}
+          class="h-full w-full border-primary-light border relative placeholder:text-[#ABABAB] text-xs ps-9 rounded-full"
+        />
+
+        <div class="absolute start-2 top-1/2 -translate-y-1/2">
+          <Fragment set:html={searchIcon} />
+        </div>
+      </div>
+
+      <button
+        class="w-1/3 outline-none flex xl:hidden h-full bg-[#F04F4E] hover:-translate-y-1 transition-all focus:-translate-y-1 px-5 rounded-full items-center justify-center gap-2"
+      >
+        <div class="w-4 h-4 flex items-center justify-center">
+          <Fragment set:html={donateIcon} class:list={["w-full h-full"]} />
+        </div>
+        <div class="h-2/3 w-[1px] bg-white/30"></div>
+        <p class="text-white text-sm font-medium">{content.header.donate}</p>
+      </button>
+    </div>
+  </div>
+</div>

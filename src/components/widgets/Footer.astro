@@ -1,0 +1,207 @@
+---
+import { Icon } from 'astro-icon/components';
+import { SITE } from 'astrowind:config';
+import { getHomePermalink } from '~/utils/permalinks';
+import Image from 'astro/components/Image.astro';
+import footerImg from '~/assets/images/footer-img.png';
+import logo from '~/assets/icons/footer-logo.svg?raw';
+import chat from '~/assets/icons/chat-icon.svg?raw';
+import extraLogo from '~/assets/icons/footer-extra-icon.svg?raw';
+import FooterInfoSection from '~/components/FooterInfoSection.astro';
+import content from '~/content/ar';
+import { fetchFooterMenu, fetchMainMenu } from '~/api';
+interface Link {
+  text?: string;
+  href?: string;
+  ariaLabel?: string;
+  icon?: string;
+}
+
+interface Links {
+  title?: string;
+  links: Array<Link>;
+}
+
+export interface Props {
+  links: Array<Links>;
+  secondaryLinks: Array<Link>;
+  socialLinks: Array<Link>;
+  footNote?: string;
+  theme?: string;
+}
+
+/*
+  Ensure you have access to the current locale.
+  Here we default to "ar" if Astro.currentLocale isn’t set.
+*/
+const locale = Astro.currentLocale || 'ar';
+// Function to fetch category data from the API
+
+const menu = await fetchFooterMenu();
+// swap the order of the first two items
+// Transform the menu data to group children under their parents
+let menuData = menu.data
+  .reduce((acc, item) => {
+    if (!item.parent_id) {
+      // This is a parent item
+      // Find any children that have this item's id as their parent_id
+      const children = menu.data.filter((child) => child.parent_id === item.id);
+      return [...acc, { ...item, children }];
+    }
+    // Skip children as they'll be included under their parents
+    return acc;
+  }, [])
+  .sort((a, b) => a.position - b.position);
+if (menuData.length) {
+  menuData.forEach((item) => {
+    if (item.children) {
+      item.children.sort((a, b) => a.position - b.position);
+    }
+  });
+}
+
+const { socialLinks = [], secondaryLinks = [], links = [], footNote = '', theme = 'light' } = Astro.props;
+---
+
+<div class="relative">
+  <div class={'relative footer-place-holder rounded-0 overflow-hidden pointer-events-none'}>
+    <Image
+      class={'w-full h-[38%] xl:h-auto object-cover bg-page pointer-events-none'}
+      src={footerImg}
+      alt={'footer-ex'}
+      loading={'lazy'}
+    />
+  </div>
+  <a
+    href="#"
+    class="absolute outline-none hover:bg-yellow focus:bg-yellow transition-all -top-10 xl:-top-12 px-4 py-2 start-3 xl:start-32 bg-primary-light text-white xl:text-2xl rounded-tr-[10px] rounded-tl-[10px]"
+  >
+    {content.footer.members}
+  </a>
+</div>
+<footer
+  class:list={[
+    { dark: theme === 'dark' },
+    'fixed w-full bottom-0 -z-10 isolate  not-prose bg-primary text-primary-light',
+  ]}
+>
+  <!--CORNER SVG EXTRA  -->
+  <div class="absolute bottom-0 z-10 hidden xl:block end-0 ltr:-scale-x-100">
+    <Fragment set:html={extraLogo} />
+  </div>
+  <div class="absolute inset-0 pointer-events-none dark:bg-dark" aria-hidden="true"></div>
+  <div
+    class="relative px-4 mx-auto max-w-7xl sm:px-6 dark:text-slate-300 intersect-once intersect-quarter intercept-no-queue motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade"
+  >
+    <div class="grid grid-cols-12 gap-4 py-8 gap-y-8 sm:gap-8 md:py-12">
+      <div class="col-span-12 lg:col-span-4">
+        <div
+          class="relative flex items-center justify-center w-full xl:flex-col xl:items-start xl:justify-between xl:w-auto"
+        >
+          <a href="/" class="flex items-center justify-center scale-50 xl:scale-100">
+            <Fragment set:html={logo} />
+          </a>
+
+        
+        </div>
+      </div>
+      {
+        menu.data.map((menu) => (
+          <div class="col-span-6 md:col-span-3 lg:col-span-1">
+            <div class="mb-2 font-medium text-green">{menu.title[locale] || menu.title['ar']}</div>
+            {links && Array.isArray(links) && links.length > 0 && (
+              <ul class="text-sm">
+                {menu?.children?.map((link) => (
+                  <li class="mb-2">
+                    <a
+                      class="text-gray-200 transition duration-150 ease-in-out hover:text-white hover:underline dark:text-gray-400"
+                      href={link.category_id ? `/category/${link.category_id}` : link.url}
+                      aria-label={'navigation link to ' + link.title[locale] || link.title['ar']}
+                    >
+                      <Fragment set:html={link.title[locale]|| link.title['ar']} />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))
+      }
+    </div>
+    <div
+      class="w-3/4 py-6 border-t md:flex md:items-center md:justify-between md:py-2 border-primary-light border-opacity-10"
+    >
+      {
+        socialLinks?.length ? (
+          <ul class="flex mb-4 -ml-2 md:order-1 md:ml-4 md:mb-0 rtl:ml-0 rtl:-mr-2 rtl:md:ml-0 rtl:md:mr-4">
+            {socialLinks.map(({ ariaLabel, href, text, icon }) => (
+              <li>
+                <a
+                  class="text-white dark:text-gray-400  hover:opacity-75 focus:opacity-75  focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5 inline-flex items-center"
+                  aria-label={ariaLabel}
+                  href={href}
+                >
+                  {icon && <Icon name={icon} class="w-5 h-5" />}
+                  <Fragment set:html={text} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          ''
+        )
+      }
+
+      <div class="mr-4 text-sm text-primary-light dark:text-muted">
+        <Fragment set:html={footNote} />
+      </div>
+      <div class="flex gap-1 text-sm text-primary-light">
+        {
+          secondaryLinks.map(({ text, href }, index) => (
+            <>
+              {index !== 0 ? ' · ' : ''}
+              <a
+                class="transition duration-150 ease-in-out text-primary-lght hover:opacity-75 dark:opacity-75 hover:underline"
+                href={href}
+                set:html={text}
+              />
+            </>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</footer>
+<button
+title="whatsapp"
+class="fixed bottom-8 z-50 end-8  w-[50px] h-[50px] xl:w-[100px] xl:h-[100px]   rounded-full bg-yellow flex items-center justify-center"
+>
+<div class="scale-50 xl:scale-100">
+  <Fragment set:html={chat} />
+</div>
+</button>
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const footer = document.querySelector('footer');
+    const footerHeight = footer?.offsetHeight || 0;
+    const footerSpacer = document.querySelector('.footer-place-holder') as HTMLElement;
+    const footerSpacerImage = document.querySelector('.footer-place-holder img') as HTMLElement;
+    // add a div that has the same height as the footer element after the body>main element
+    footerSpacer.style.height = `${footerHeight * 1.5}px`;
+    // footerSpacer.style.pointerEvents = "none";
+    // i need to insert it between the main and footer
+    footerSpacerImage.style.height = `${footerHeight * 0.55}px`;
+    document.body.insertBefore(footerSpacer, footer);
+    // add window resize event listener to update the height of the spacer
+    window.addEventListener('resize', () => {
+      footerSpacerImage.style.height = `${footerHeight * 0.55}px`;
+      footerSpacer.style.height = `${footerHeight * 1.5}px`;
+    });
+
+    // for accessibilty whenever the user tabs into the footer to any focusable element in it
+    // we wanna scroll the page into its max to view the footer content
+    footer?.addEventListener('focusin', () => {
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+  });
+</script>

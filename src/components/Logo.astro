@@ -1,0 +1,16 @@
+---
+import { Image } from 'astro:assets';
+import mainLogo from "../assets/images/main-logo.png";
+import ImageWithFallback from './ui/ImageWithFallback.astro';
+
+---
+
+
+<ImageWithFallback
+  alt={"main"}
+  src={mainLogo}
+  priority
+  loading={"eager"}
+  class={"relative xl:flex h-full w-full object-contain"}
+/>
+

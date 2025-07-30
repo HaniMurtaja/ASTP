@@ -1,0 +1,70 @@
+---
+// import content from '~/content/ar';
+import podcastIcon from '~/assets/icons/podcast-icon.svg?raw';
+import playIcon from '~/assets/icons/play-icon.svg?raw';
+import waveform from '~/assets/icons/waveform.svg?raw';
+import podcastExtra from '~/assets/icons/padcast-extra-icon.svg?raw';
+// import avatar from '~/assets/images/avatar.png';
+// import podImg from '~/assets/images/podcast-img.png';
+import Image from 'astro/components/Image.astro';
+import type { ImageMetadata } from 'astro';
+import {formatLargeNumber} from '~/utils/utils';
+export type Props = {
+  title: string;
+  description: string;
+  img: string | ImageMetadata;
+  link: string;
+  views:number
+};
+const {title,description,img,link,views} = Astro.props
+
+---
+
+<div
+  class="w-full isolate  bg-primary-light dark:bg-primary rounded-[20px] xl:h-[250px] px-2 xl:px-8 flex flex-col py-4 xl:py-0 xl:flex-row items-center gap-4 xl:gap-12 relative overflow-hidden"
+>
+  <div class="absolute w-4/5 -translate-y-1/2 pointer-events-none start-0 top-1/2 isolate opacity-20" set:html={waveform} />
+  <div class="flex flex-col xl:py-12 w-full xl:w-[70%] ">
+    <div class="flex items-center justify-between w-full">
+      <div class="flex items-center justify-between w-full gap-5 xl:w-auto xl:justify-center">
+        <div class="scale-75 xl:scale-100">
+          <Fragment set:html={podcastIcon} class:list={'w-full h-full'} />
+        </div>
+        <div class="flex flex-col items-center gap-2 px-5 xl:px-0">
+          <p class="text-2xl text-white xl:text-4xl line-clamp-2 max-w-[7ch]">{title}</p>
+        </div>
+      </div>
+      <p class="hidden font-bold text-white xl:flex text-8xl">{formatLargeNumber((parseFloat(views)))}</p>
+    </div>
+    <div class="w-full h-[2px] mt-3 bg-green hidden xl:block"></div>
+    <div class="items-center justify-between hidden grid-cols-3 gap-2 mt-2 xl:grid">
+    <p class="col-span-2 text-xl font-medium text-white ps-6 text-balance">{description}</p>
+      <!-- <button class="flex items-center justify-end outline-none group">
+        <div class="w-10 h-10 border rounded-full border-green -me-2">
+          <Image src={avatar} alt={'avatar'} loading={'lazy'} class={'rounded-full w-full h-full object-cover'} />
+        </div>
+        <div
+          class="flex items-center justify-center w-10 h-10 pb-1 text-3xl border rounded-full border-green text-green bg-page"
+        >
+          <span>+</span>
+        </div>
+
+        <p class="text-[15px] text-white ps-2 group-focus:-translate-y-1 group-hover:-translate-y-1 transition-all">
+          {content.podcast.join}
+        </p>
+      </button> -->
+    </div>
+  </div>
+  <a href={link} class="relative hidden w-2/3 py-4 outline-none xl:block xl:max-w-xs group " href="#">
+    <div
+      class="absolute w-12 h-12 transition-all -translate-x-1/2 -translate-y-1/2 ltr:translate-x-1/2 end-1/2 top-1/2 group-focus:scale-125 group-hover:scale-125"
+    >
+      <Fragment set:html={playIcon} />
+    </div>
+    <Image src={img} inferSize alt={description|| 'podcast thumbnail'} loading={'eager'} class="w-full h-auto xl:px-12" />
+  </a>
+
+  <div class="absolute bottom-0 hidden xl:flex ltr:-scale-x-100 end-0 -z-10 ">
+    <Fragment set:html={podcastExtra} />
+  </div>
+</div>

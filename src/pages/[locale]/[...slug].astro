@@ -1,0 +1,118 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+
+import SectionWrapper from '~/components/SectionWrapper.astro';
+import Subscribe from '~/components/Subscribe.astro';
+
+import HERO_FS_SLIDER from '~/components/Intro.astro';
+import { getContentForLocale } from '~/utils/utils';
+import { fetchPage } from '~/api';
+import { HOME_PAGE_SECTION_TYPES } from '~/api';
+import { isHomePageSectionType } from '~/api';
+import SIDE_BUTTON from '~/components/home-page-sections/SIDE_BUTTON.astro';
+import MEDIA_POSTS_CATEGORY from '~/components/home-page-sections/MEDIA_POSTS_CATEGORY.astro';
+import POSTS_CATEGORY from '~/components/home-page-sections/POSTS_CATEGORY.astro';
+import POSTS_CATEGORY_2 from '~/components/home-page-sections/POSTS_CATEGORY_2.astro';
+import POSTS_CATEGORY_3 from '~/components/home-page-sections/POSTS_CATEGORY_3.astro';
+import PETITIONS from '~/components/home-page-sections/PETITIONS.astro';
+import CONTACT_WRAPPER from '~/components/home-page-sections/CONTACT_WRAPPER.astro';
+import PODCASTS from '~/components/home-page-sections/PODCASTS.astro';
+import TESTIMONIALS from '~/components/home-page-sections/TESTIMONIALS.astro';
+import MAIN_FOOTER from '~/components/home-page-sections/MAIN_FOOTER.astro';
+import NotFound from '~/pages/not-found.astro';
+import 'flickity/css/flickity.css';
+
+import Footer from '~/components/widgets/Footer.astro';
+import { footerData as FooterWithNoContent } from '~/navigation';
+import POSTS from '~/components/home-page-sections/POSTS.astro';
+import POSTSCATEGORY from '~/components/home-page-sections/POSTS_CATEGORY.astro';
+
+const locale = Astro.currentLocale;
+const content = await getContentForLocale(locale);
+
+const slug = Astro.params.slug || 1;
+const metadata = {
+  title: content.meta?.title,
+  description: content.meta?.description,
+  ignoreTitleTemplate: true,
+};
+const currentPage = (await fetchPage(slug,locale)).data;
+const ComponentsSectionsMap = {
+  HERO_FS_SLIDER,
+  SIDE_BUTTON,
+  MEDIA_POSTS_CATEGORY,
+  POSTS_CATEGORY,
+  POSTS_CATEGORY_2,
+  POSTS_CATEGORY_3,
+  PODCASTS,
+  TESTIMONIALS,
+  POSTS,
+  CONTACT_WRAPPER,
+  PETITIONS,
+  // POSTS_CATEGORY,
+  // FEATURED_POSTS_CATEGORY,
+  // MEDIA_POST_CATEGORY,
+  // POSTS_CATEGORY_NO_DESC,
+  // MEDIA_LIBRARY,
+};
+const GetHomePageSectionComponent = function getSectionComponent(section: keyof typeof HOME_PAGE_SECTION_TYPES) {
+  if (!isHomePageSectionType(section)) return Fragment;
+
+  if (HOME_PAGE_SECTION_TYPES[section]) {
+    return ComponentsSectionsMap[section];
+  }
+  return Fragment;
+};
+
+const sideButtonSectionData = currentPage?.sections.find((section) => section.component === 'SIDE_BUTTON');
+
+const pageFooter = currentPage?.sections.find((section) => section.component === 'MAIN_FOOTER');
+const FooterComponent = pageFooter ? MAIN_FOOTER : Footer;
+const FooterProps = pageFooter ? { section: pageFooter } : FooterWithNoContent(content);
+if(!currentPage) {
+return Astro.redirect(`/${locale}/notfound`,404)
+}
+---
+
+
+{!currentPage? null:<>
+<Layout metadata={metadata}>
+  <Fragment slot="main">
+    {!sideButtonSectionData ? null : <SIDE_BUTTON section={sideButtonSectionData} />}
+    {
+      currentPage?.sections
+        .filter((section) => !!section.sectionables.length)
+        .map(function (section) {
+          // App\\Models\\Category
+          // section.sectionables[0].sectionable.sectionable_type === 'App\\Models\\Category'
+          const Component = GetHomePageSectionComponent(section.component as keyof typeof HOME_PAGE_SECTION_TYPES);
+          return (
+            <SectionWrapper
+              id={`category_${section.sectionables[0].sectionable_type === 'App\\Models\\Category' ? section.sectionables[0].sectionable_id : ''}`}
+            >
+              <Component
+                {...{
+                  section,
+                  id: `category_${section.sectionables[0].sectionable_type === 'App\\Models\\Category' ? section.sectionables[0].sectionable_id : section.id}`,
+                }}
+              />
+            </SectionWrapper>
+          );
+        })
+    }
+    <SectionWrapper>
+      <Subscribe />
+    </SectionWrapper>
+  </Fragment>
+  <Fragment slot="footer">
+    <FooterComponent {...FooterProps} />
+    
+  </Fragment>
+</Layout>
+<!-- this script will run to ensure that any # navigation in the current url 
+ would correctly scroll the element with that id into view  regardless of where the user was -->
+
+
+
+</>
+}

@@ -1,0 +1,72 @@
+---
+// Define props for Astro 5
+interface Props {
+  /** Button text */
+  label: string;
+  /** Instruction text below the button */
+  instruction: string;
+  /** Text direction: 'rtl' or 'ltr' */
+  dir?: 'rtl' | 'ltr';
+  /** Optional input element ID */
+  id?: string;
+
+  accept?: string;
+}
+
+const { label, instruction, dir = 'ltr', id = 'file-upload' } = Astro.props;
+
+// Local state for the chosen file name
+const uuid = crypto.randomUUID();
+const elementId = `${id}-${uuid}`;
+---
+
+<div class="w-full max-w-md md:min-w-md" dir={dir}>
+  <div class="relative inline-block w-full">
+    <!-- Hidden native file input -->
+    <input id={id} data-uuid={elementId} type="file" class="absolute inset-0 w-full h-full cursor-pointer sr-only signature-upload-input"  />
+
+    <!-- Custom button label -->
+    <label
+      for={id}
+      class="block px-4 py-2 text-center text-gray-700 bg-white border border-gray-300 rounded cursor-pointer hover:bg-gray-50"
+    >
+      {label}
+    </label>
+  </div>
+
+  <!-- Display selected file name -->
+  <span id={`${elementId}-file-name`} class="mr-2 text-gray-600 align-middle dark:text-white"></span>
+  <img
+    id={`${elementId}-preview`}
+    class="object-contain w-full mt-2 max-h-60 "
+    style="display: none;"
+    alt="File preview"
+  />
+  <!-- Instruction text -->
+  <p class="mt-2 text-sm text-gray-500 dark:text-white">
+    {instruction}
+  </p>
+</div>
+<script is:inline data-astro-rerun define:vars={{ elementId }}>
+  const input = document.querySelector(`input[data-uuid=${elementId}]`);
+  const label = document.getElementById(`${elementId}-file-name`);
+  function handleChange(event) {
+    const input = event.currentTarget;
+    const preview = document.getElementById(`${elementId}-preview`);
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      label.innerText = file.name;
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.style.display = 'none';
+      }
+    }
+  }
+  input.addEventListener('change', handleChange);
+</script>

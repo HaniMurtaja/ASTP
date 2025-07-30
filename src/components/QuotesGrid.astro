@@ -1,0 +1,61 @@
+---
+import content from "~/content/ar";
+import img from "../assets/images/quote-img.png";
+import QuotesCard from "./QuotesCard.astro";
+
+const data = Array(8)
+  .fill(null)
+  .map(() => ({
+    img: img,
+    id: 1,
+    auth: "عائشة السعدي",
+    position: "نائبة برلمانية عن مجلس الأمة الكويتي.",
+    title:
+      "حكومة الاحتلال حكومة إعدام وتعمل علي تسليح مليشيات المستوطنين تحضيراً لتحقيق الحلم الصهيوني على حساب دول المنطقة.",
+    link: "#",
+  }));
+---
+
+<div class="text-center py-[90px] xl:py-[138px] main-padding relative w-full bg-page">
+  <h2 class="text-primary-light text-4xl xl:text-[64px] font-[600]">
+    {content.quote.title}
+  </h2>
+  <p class="xl:text-2xl mt-3 text-[#ABABAB] max-w-xl mx-auto line-clamp-2">
+    {content.quote.desc}
+  </p>
+
+  <div class="carousel-quotes mt-28 xl:mt-14">
+    {
+      data?.map((item) => {
+        return (
+          <div class={`carousel-cell w-full lg:w-1/2 lg:pe-6 mx-10 lg:mx-0`}>
+            <QuotesCard {...item} />
+          </div>
+        );
+      })
+    }
+  </div>
+</div>
+
+<script
+  is:inline
+  data-astro-rerun
+  src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+<script data-astro-rerun is:inline>
+  new Flickity(".carousel-quotes", {
+    // options, defaults listed
+    accessibility: true,
+    gutter: 10,
+    autoPlay: false,
+    freeScroll: false,
+    friction: 0.5,
+    groupCells: true,
+    initialIndex: 0,
+    lazyLoad: true,
+    prevNextButtons: true,
+    pageDots: false,
+    rightToLeft: document.dir === "rtl",
+    // wrapAround: true,
+    // contain: true,
+  });
+</script>

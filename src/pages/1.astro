@@ -1,0 +1,49 @@
+---
+const { cookies, request } = Astro;
+
+// Supported locales, including your default
+const supportedLocales = ['en', 'fr', 'de', 'es', 'ar'];
+const defaultLocale = 'ar';
+
+// Read current locale from cookie or derive from Accept-Language header
+let locale = cookies.get('locale')?.value;
+if (!locale) {
+  const acceptLang = request.headers.get('accept-language') || '';
+  const derived = acceptLang.split(',')[0]?.split('-')[0];
+  locale = supportedLocales.includes(derived) ? derived : defaultLocale;
+  cookies.set('locale', locale, {
+    path: '/',
+    maxAge: 60 * 60 * 24 * 365,
+  });
+}
+
+// Parse the incoming URL path
+const url = new URL(request.url);
+const pathname = url.pathname; // e.g. "/about-us" or "/en/about-us" or "/"
+
+// Split into segments (omit empty)
+const segments = pathname.split('/').filter(Boolean);
+
+if (segments.length === 0) {
+  // Root URL: redirect to locale home
+  return Astro.redirect(`/${locale}`, 302);
+}
+
+const firstSegment = segments[0];
+if (!supportedLocales.includes(firstSegment)) {
+  // No locale prefix: add the user's locale
+  return Astro.redirect(`/${locale}${pathname}`, 302);
+} else {
+  // URL already starts with a locale
+  if (firstSegment !== locale) {
+    // User navigated to a different locale: update cookie
+    locale = firstSegment;
+    cookies.set('locale', locale, {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365,
+    });
+
+  }
+  // Let the request proceed normally under this locale
+}
+---

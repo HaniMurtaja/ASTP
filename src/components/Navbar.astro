@@ -1,0 +1,50 @@
+---
+import { Image } from 'astro:assets';
+import mainLogo from "../assets/images/main-logo.png";
+import content from "~/content/ar";
+import ImageWithFallback from './ui/ImageWithFallback.astro';
+
+const { childPage } = Astro.props;
+---
+
+<div
+  class="absolute z-20 flex items-center justify-between w-full gap-12 main-padding xl:justify-start top-10"
+>
+  <a
+    href="/"
+    class="w-[180px] h-[70px] outline-none 2xl:w-[285px] 2xl:h-[70px] transition-all focus:scale-105 hover:scale-105"
+  >
+    <ImageWithFallback
+      alt={"main"}
+      src={mainLogo}
+      priority
+      loading={"eager"}
+      class={"relative xl:flex h-full w-full object-contain"}
+    />
+  </a>
+
+  <button
+    class="relative flex flex-col items-center justify-center w-8 h-8 gap-2 xl:hidden"
+    onclick="toggleMenu()"
+  >
+    <div class="w-full h-[2px] bg-primary-light"></div>
+    <div class="w-full h-[2px] bg-primary-light me-2"></div>
+    <div class="w-full h-[2px] bg-primary-light"></div>
+  </button>
+
+  <div class="items-center hidden xl:flex">
+    {
+      content.header.sections?.map((page, index) => {
+        return (
+          <a
+            href={page.path}
+            class={`2xl:text-lg outline-none focus:bg-primary-light hover:bg-primary-light
+                 xl:p-3 2xl:p-4 transition-all rounded-lg ${childPage ? "text-primary hover:text-white focus:text-white" : "text-[#E2E7F5]"}`}
+          >
+            {page.title}
+          </a>
+        );
+      })
+    }
+  </div>
+</div>

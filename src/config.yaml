@@ -1,0 +1,72 @@
+site:
+  name: "Parliamentarians for Jerusalem and Palestine Association"
+  site: 'https://lp4q.netlify.app'  # Replace with the actual association domain
+  base: '/'
+  trailingSlash: false
+
+  googleSiteVerificationId: your-google-site-verification-id  # Replace with your actual ID
+
+# Default SEO metadata
+metadata:
+  title:
+    default: "Parliamentarians for Jerusalem and Palestine Association"
+    template: '%s — Parliamentarians for Jerusalem and Palestine Association'
+  description: "Uniting global parliamentarians in support of Palestinian rights and the establishment of an independent state with Jerusalem as its capital, in accordance with international resolutions and human rights principles."
+  robots:
+    index: true
+    follow: true
+  openGraph:
+    site_name: "Parliamentarians for Jerusalem and Palestine Association"
+    images:
+      - url: '~/assets/images/bg.png'
+        width: 1200
+        height: 628
+    type: website
+  twitter:
+    handle: '@PJPA'  # Update with the actual Twitter handle if different
+    site: '@PJPA'
+    cardType: summary_large_image
+
+i18n:
+  language: ar
+  textDirection: rtl
+
+apps:
+  blog:
+    isEnabled: true
+    postsPerPage: 6
+
+    post:
+      isEnabled: true
+      permalink: '/%slug%' # Variables: %slug%, %year%, %month%, %day%, %hour%, %minute%, %second%, %category%
+      robots:
+        index: true
+
+    list:
+      isEnabled: true
+      pathname: 'blog' # Blog main path, can be changed to "articles" (/articles)
+      robots:
+        index: true
+
+    category:
+      isEnabled: true
+      pathname: 'category' # Category main path, can be changed to "group" (/group/some-category)
+      robots:
+        index: true
+
+    tag:
+      isEnabled: true
+      pathname: 'tag' # Tag main path, can be changed to "topics" (/topics/some-category)
+      robots:
+        index: false
+
+    isRelatedPostsEnabled: true
+    relatedPostsCount: 4
+
+analytics:
+  vendors:
+    googleAnalytics:
+      id: null  # Replace with your Google Analytics ID if available
+
+ui:
+  theme: 'system'  # Options: "system" | "light" | "dark" | "light:only" | "dark:only"

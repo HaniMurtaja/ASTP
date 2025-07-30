@@ -1,0 +1,82 @@
+---
+import LastNewsCard from '~/components/LastNewsCard.astro';
+import type { CategoryObject, Sectionable } from '~/api/api';
+import { ExtractImagesFromMedia, prepareContentFromJsonOrHTMLString } from '~/utils/utils';
+import Action from './Action.astro';
+
+const locale = Astro.currentLocale || 'ar';
+const { section } = Astro.props;
+const category = section?.sectionables?.find((sectionable) => sectionable.sectionable_type === 'App\\Models\\Category');
+if (!category) {
+  return null;
+}
+const posts = ((category as Sectionable)?.sectionable as CategoryObject).posts || [];
+const allLink = section?.sectionables?.find(
+  (sectionable) => {
+    return sectionable.sectionable_type === ('App\\Models\\Action');
+  }
+);
+const postsData = posts.map((post) => ({
+  img: ExtractImagesFromMedia(post.media)?.[0]?.original_url,
+  id: post?.id,
+  link: post?.link ? post.link : `/${locale}/post/${post?.slug}`,
+  title: post?.title[locale] || post?.title['ar'],
+  desc: prepareContentFromJsonOrHTMLString(post?.description[locale] , locale, true),
+  short_desc: prepareContentFromJsonOrHTMLString(
+    post?.short_description[locale] || post?.description[locale],
+    locale,
+    true
+  ).substring(0,200) + '...'
+}));
+if (!posts || posts.length === 0) {
+  return null;
+}
+---
+
+<div class="text-center py-[90px] xl:py-[148px] main-padding relative w-full bg-gray-100 dark:bg-page">
+  <h2 class="text-primary-light text-4xl xl:text-[64px] font-[600] capitalize">
+    <a href={`${locale}/category/${category.sectionable_id}`}>
+      {section.title[locale] || section.title['ar']}
+    </a>
+  </h2>
+  <p class="xl:text-2xl mt-3 capitalize text-[#ABABAB] max-w-xl mx-auto line-clamp-2">
+    {section.description[locale] || section.description['ar']}
+  </p>
+
+  <div class="grid grid-flow-col mt-24 overflow-x-clip carousel-activities xl:mt-14">
+    {
+      postsData?.map((item) => {
+        return (
+          <div class={`carousel-cell transition-all duration-300 w-full lg:w-1/2  xl:pe-6`}>
+            <LastNewsCard overlayClass="bg-primary" {...item} />
+          </div>
+        );
+      })
+    }
+    
+  </div>
+  {
+    allLink?.sectionable?.link && allLink?.sectionable?.label?.[locale] && (
+      <div class="flex items-center justify-center w-full mt-10">
+        <Action section={allLink} />
+      </div>
+    )
+  }
+</div>
+<script is:inline data-astro-rerun src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+<script data-astro-rerun is:inline>
+  new Flickity('.carousel-activities', {
+    // options, defaults listed
+    accessibility: true,
+    gutter: 10,
+    autoPlay: false,
+    freeScroll: false,
+    friction: 0.5,
+    groupCells: true,
+    initialIndex: 0,
+    lazyLoad: true,
+    prevNextButtons: true,
+    pageDots: false,
+    rightToLeft: document.dir === 'rtl',
+  });
+</script>

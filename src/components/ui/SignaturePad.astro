@@ -1,0 +1,140 @@
+---
+import FileUpload from './FileUpload.astro';
+import signaturePad from './SignaturePad.ts?url';
+// SignaturePad.astro
+interface Props {
+  name: string;
+  required?: boolean;
+  className?: string;
+  canvasWidth?: number;
+  canvasHeight?: number;
+  translations: {
+    label: string;
+    uploadSignature: string;
+    drawMethod: string;
+    uploadMethod: string;
+    clearButton: string;
+    removeButton: string;
+    drawInstructions: string;
+    uploadInstructions: string;
+
+    validation: {
+      required: string;
+      invalidFormat: string;
+      imageTooBig: string;
+      imageLoadError: string;
+    };
+  };
+}
+
+const { name, required = false, className = '', canvasWidth = 400, canvasHeight = 150, translations } = Astro.props;
+
+const fieldId = `signature-${name}`;
+const canvasId = `${fieldId}-canvas`;
+const fileInputId = `${fieldId}-file`;
+---
+
+<div class={`signature-pad-container flex flex-col gap-4 ${className}`}>
+  <label for={fieldId} class="text-sm font-semibold text-gray-700 signature-pad-label dark:text-white">
+    {translations.label}
+    {required && <span class="text-red-500 required">*</span>}
+  </label>
+
+  <!-- Hidden file input that will receive the signature data -->
+  <input
+    type="file"
+    id={fieldId}
+    name={name}
+    accept="image/*"
+    class="sr-only signature-file-input"
+    required={required}
+  />
+
+  <!-- Signature method toggle -->
+  <div class="flex gap-4 p-3 border border-gray-300 rounded-lg signature-method-toggle bg-gray-50 dark:bg-gray-800">
+    <label
+      for={`${fieldId}-draw`}
+      class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer method-option dark:text-white"
+    >
+      <input
+        id={`${fieldId}-draw`}
+        type="radio"
+        name={`${fieldId}-method`}
+        value="draw"
+        checked
+        class="cursor-pointer method-radio accent-primary outline-primary-light focus:ring-primary-light"
+      />
+      <span>{translations.drawMethod}</span>
+    </label>
+    <label
+      tabindex="auto"
+      for={`${fieldId}-upload`}
+      class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer method-option dark:text-white"
+    >
+      <input
+        id={`${fieldId}-upload`}
+        type="radio"
+        name={`${fieldId}-method`}
+        value="upload"
+        class="cursor-pointer method-radio accent-primary outline-primary-light focus:ring-primary-light"
+      />
+      <span>{translations.uploadMethod}</span>
+    </label>
+  </div>
+
+  <!-- Draw signature section -->
+  <div class="signature-draw-section" data-method="draw">
+    <div class="p-2 bg-white border-2 border-gray-300 rounded-lg dark:border-none signature-canvas-container dark:bg-gray-900">
+      <canvas
+        id={canvasId}
+        width={canvasWidth}
+        height={canvasHeight}
+        class="block w-full border border-gray-200 rounded dark:invert signature-canvas cursor-crosshair"
+        style={`width: ${canvasWidth}px; height: ${canvasHeight}px; max-width: 100%;`}></canvas>
+      <div class="flex items-center justify-between mt-2 signature-controls">
+        <button
+          type="button"
+          class="px-3 py-1 text-sm text-white transition-colors bg-gray-500 border-none rounded cursor-pointer outline-primary-light focus:ring-primary-light signature-clear-btn hover:bg-gray-600"
+          data-action="clear"
+        >
+          {translations.clearButton}
+        </button>
+        <span class="text-xs text-gray-500 dark:text-white signature-instructions">
+          {translations.drawInstructions}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload signature section -->
+  <div class="hidden signature-upload-section" data-method="upload">
+    <div class="p-4 bg-white border-2 border-gray-300 rounded-lg dark:border-0 signature-upload-container dark:bg-gray-900">
+      <!-- <input
+        type="file"
+        id={fileInputId}
+        accept="image/*"
+        class="w-full p-3 text-sm text-gray-700 bg-white border border-gray-300 rounded-md signature-upload-input dark:text-white"
+      /> -->
+      <FileUpload id={fileInputId} label={translations.uploadSignature} instruction={translations.uploadInstructions} />
+
+      <div class="hidden mt-3 signature-preview">
+        <img
+          class="h-auto max-w-full mb-2 border border-gray-200 rounded signature-preview-img"
+          alt="Signature preview"
+        />
+        <button
+          type="button"
+          class="px-3 py-1 text-sm text-white transition-colors bg-red-500 border-none rounded cursor-pointer signature-remove-btn hover:bg-red-600"
+          data-action="remove"
+        >
+          {translations.removeButton}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Validation message container -->
+  <div class="hidden p-3 text-sm text-red-600 border border-red-200 rounded-md signature-validation bg-red-50"></div>
+</div>
+
+<script is:inline src={signaturePad}></script>

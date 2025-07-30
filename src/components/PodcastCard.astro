@@ -1,0 +1,45 @@
+---
+import Image from 'astro/components/Image.astro';
+import playIcon from '../assets/icons/play-icon.svg?raw';
+import type { ImageMetadata } from 'astro';
+import content from '~/content/ar';
+import ImageWithFallback from './ui/ImageWithFallback.astro';
+
+export interface ProdProps {
+  img: ImageMetadata;
+  title: string;
+  description: string;
+  id: string;
+  sectionTitle: string;
+  link: string;
+  desc: string;
+}
+
+const { img, title, description ,sectionTitle,link} = Astro.props as ProdProps;
+---
+
+<a class="flex flex-col items-start w-full text-white outline-none text-start group" href={link}>
+  <div class="w-full h-[350px] relative overflow-hidden rounded-[20px]">
+    <ImageWithFallback
+      alt={'podcast thumbnail'}
+      src={img}
+      inferSize
+      loading={'eager'}
+      loading={'lazy'}
+      class={'rounded-[20px] w-full h-full object-cover group-focus:scale-110 group-hover:scale-110 transition-all duration-200'}
+    />
+    <div
+      class="absolute w-16 h-16 transition-all -translate-x-1/2 -translate-y-1/2 ltr:translate-x-1/2 end-1/2 top-1/2 group-focus:scale-125 group-hover:scale-125"
+    >
+      <Fragment set:html={playIcon} class:list={['w-full h-full']} />
+    </div>
+
+    <p
+      class="absolute z-10 w-full text-lg italic font-bold text-center text-white transition-opacity -rotate-12 top-8 end-0 group-hover:opacity-30 group-focus:opacity-30"
+      set:html={sectionTitle.split(' ').join('<br />')}
+    />
+  </div>
+
+  <p class="text-white text-2xl font-[600] mt-3">{title}</p>
+  <p class="text-white mt-5 w-[80%]">{description}</p>
+</a>

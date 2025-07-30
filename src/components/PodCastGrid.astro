@@ -1,0 +1,60 @@
+---
+import podImg from "../assets/images/pod-data.png";
+import Podcast from "./PodcastWidget.astro";
+import type { ProdProps } from "./PodcastCard.astro";
+import PodcastCard from "./PodcastCard.astro";
+
+const data: ProdProps[] = Array(8)
+  .fill(null)
+  .map(() => ({
+    src: podImg,
+    title: "الأقصى يمر بأخطر مرحلة تاريخية",
+    description:
+      "تُعرب رابطة برلمانيون لأجل القدس وفلسطين عن إدانتها الشديدة لاقتحام وزير الأمن القومي الإسرائيلي المتطرف، إيتمار بن غفير، للمسجد الأقصى المبارك.",
+  }));
+---
+<div class='w-full bg-yellow dark:bg-secondary to-white min-h-32'>&nbsp;</div>
+<div
+  class="relative w-full gap-10 py-8 -mt-1 main-padding pt-36 lg:pt-24 dark:bg-secondary bg-yellow"
+>
+  <div
+    class="top-0 w-full mb-20 xl:mx-auto xl:my-0 -mt-72 xl:-translate-y-full xl:translate-x-1/2 xl:w-4/5 2xl:max-w-screen-2xl xl:absolute end-1/2 xl:rtl:-translate-x-1/2"
+  >
+    <Podcast />
+  </div>
+
+  <div class="carousel-podcast">
+    {
+      data?.map((item, i) => {
+        return (
+          <div class={`carousel-cell w-full lg:w-1/2 xl:w-1/3 lg:pe-6`}>
+            <PodcastCard {...item} />
+          </div>
+        );
+      })
+    }
+  </div>
+</div>
+
+<script
+  is:inline
+  data-astro-rerun
+  src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+<script data-astro-rerun is:inline>
+  new Flickity(".carousel-podcast", {
+    // options, defaults listed
+    accessibility: true,
+    gutter: 10,
+    autoPlay: false,
+    freeScroll: false,
+    friction: 0.5,
+    groupCells: true,
+    initialIndex: 0,
+    lazyLoad: true,
+    prevNextButtons: true,
+    pageDots: false,
+    rightToLeft: document.dir === "rtl",
+    // wrapAround: true,
+    // contain: true,
+  });
+</script>

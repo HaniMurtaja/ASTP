@@ -1,0 +1,13 @@
+[build]
+  publish = "dist"
+  command = "npm run build"
+[build.processing.html]
+  pretty_urls = false
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+[images]
+  remote_images = ["https:\\/\\/ip4q.coktilat.com\\/storage\\/.*","https://img.youtube.com/.*","lp4q.org","api.lp4q.org"]
+[functions]
+  node_bundler = "nft"

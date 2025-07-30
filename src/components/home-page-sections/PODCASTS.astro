@@ -1,0 +1,103 @@
+---
+import type { SectionObject } from '~/api/api';
+import Podcast from '~/components/PodcastWidget.astro';
+import PodcastCard from '~/components/PodcastCard.astro';
+import { ExtractImagesFromMedia, prepareContentFromJsonOrHTMLString } from '~/utils/utils';
+export type Props = {
+  section: SectionObject;
+};
+import { twMerge } from 'tailwind-merge';
+import Action from './Action.astro';
+
+
+const locale = Astro.currentLocale || '';
+const { section } = Astro.props;
+
+const sectionTitle = section.title[locale];
+const sectionDescription = section.description[locale];
+
+const featuredPodcast = section.sectionables.find(
+  (sectionable) => sectionable.sectionable_type === 'App\\Models\\Podcast'
+);
+
+
+const CarouselSection =section?.sectionables
+    ?.find((sectionable) => sectionable.sectionable_type === 'App\\Models\\Section') as unknown as SectionObject;
+
+const allLink = CarouselSection?.sectionable?.sectionables?.find(
+  (sectionable) => {
+    return sectionable.sectionable_type === ('App\\Models\\Action');
+  }
+);
+
+const podcastsCarouselSectionData =
+  CarouselSection
+    ?.sectionable.sectionables.filter((sectionable) => !!sectionable.sectionable && sectionable.sectionable_type === 'App\\Models\\Podcast')
+    .map(({ sectionable }) => {
+      return {
+        img: ExtractImagesFromMedia(sectionable.media)?.[0]?.original_url,
+        id: sectionable.id,
+        sectionTitle: sectionTitle,
+        link: sectionable.link ? sectionable.link : `/${locale}/podcast/${sectionable.slug}`,
+        title: sectionable.title?.[locale] ,
+        desc: prepareContentFromJsonOrHTMLString(
+          sectionable.short_description?.[locale] ,
+          locale,
+          true
+        ),
+      };
+    }) || [];
+---
+
+{ sectionTitle && sectionDescription &&<div class="w-full bg-yellow dark:bg-secondary to-white min-h-32">&nbsp;</div>
+<div class="relative w-full gap-10 py-8 -mt-1 main-padding pt-36 lg:pt-24 dark:bg-secondary bg-yellow">
+  <div
+    class="top-0 w-full mb-20 xl:mx-auto xl:my-0 -mt-72 xl:-translate-y-full xl:translate-x-1/2 xl:w-4/5 2xl:max-w-screen-2xl xl:absolute end-1/2 xl:rtl:-translate-x-1/2"
+  >
+    <Podcast
+      views={featuredPodcast?.sectionable?.viewers_number}
+      title={sectionTitle}
+      description={sectionDescription}
+      img={ExtractImagesFromMedia(featuredPodcast?.sectionable?.media)?.[0]?.original_url}
+      link={featuredPodcast?.sectionable?.link
+        ? featuredPodcast.sectionable.link
+        : `/${locale}/podcast/${featuredPodcast?.sectionable?.slug}`}
+    />
+  </div>
+
+  <div class="carousel-podcast">
+    {
+      podcastsCarouselSectionData?.map((item) => {
+        return (
+          <div class={`carousel-cell w-full lg:w-1/2 xl:w-1/3 lg:pe-6`}>
+            <PodcastCard {...item} />
+          </div>
+        );
+      })
+    }
+  </div>
+ {allLink?.sectionable?.link && allLink?.sectionable?.label?.[locale] && <div class="flex items-center justify-center w-full mt-10">
+    <Action section={allLink} />
+
+  </div>}
+</div>
+
+<script is:inline data-astro-rerun src="https://unpkg.com/flickity@2/dist/flickity.pkgd.min.js"></script>
+<script data-astro-rerun is:inline>
+  new Flickity('.carousel-podcast', {
+    // options, defaults listed
+    accessibility: true,
+    gutter: 10,
+    autoPlay: false,
+    freeScroll: false,
+    friction: 0.5,
+    groupCells: true,
+    initialIndex: 0,
+    lazyLoad: true,
+    prevNextButtons: true,
+    pageDots: false,
+    rightToLeft: document.dir === 'rtl',
+    // wrapAround: true,
+    // contain: true,
+  });
+</script>}

@@ -1,0 +1,55 @@
+---
+import { Image } from 'astro:assets';
+import arrow from "../assets/icons/green-arrow-icon.svg?raw";
+import { getContentForLocale } from "~/utils/utils";
+import type { ImageMetadata } from 'astro';
+import ImageWithFallback from './ui/ImageWithFallback.astro';
+import { prepareContentFromJsonOrHTMLString } from '~/utils/utils';
+
+export interface NewsCardProps {
+  link: string;
+  title: string;
+  desc?: string;
+  img: ImageMetadata;
+  id: number;
+  short_desc:string;
+  overlayClass?:string
+}
+const content= await getContentForLocale(Astro.currentLocale);
+
+const {overlayClass='bg-secondary',...props} = Astro.props as NewsCardProps;
+---
+
+<a
+  href={props.link}
+  class="w-full  outline-none flex group flex-col min-h-96 items-start justify-end rounded-[20px] overflow-clip relative px-7 py-8 group min-w-52"
+>
+  <div class="absolute inset-0 rounded-[20px] w-full h-full group-hover:brightness-75 group-focus:brightness-75 transition-all duration-200">
+    <ImageWithFallback
+      loading={"eager"}
+      src={props.img}
+      alt={props.id + "-new"}
+      inferSize
+      class={"object-cover w-full h-full group-focus:scale-110 group-hover:scale-110 transition-all duration-200"}
+    />
+  </div>
+
+ <div class={`absolute inset-x-0 bottom-0 flex items-center w-full px-8 transition-all duration-200 group-hover:flex-col group-focus:flex-col group-hover:p-8 group-focus:p-8 bg-opacity-40 backdrop-blur-sm  h-1/4 group-hover:h-full group-focus:h-full ${overlayClass}`}>
+  <h2 class="font-[600] capitalize mt-4 group-focus:font-bold group-hover:font-bold line-clamp-3 group-hover:line-clamp-5 group-focus:line-clamp-3  text-[calc(.5rem+.5vw)] text-white w-[72ch] group-hover:w-[80%] group-focus:w-[80%] z-10 text-start mb-4">
+    {props.title}
+  </h2>
+  <p class="text-lg text-balance text-white w-[80%] line-clamp-1 group-hover:line-clamp-5 group-focus:line-clamp-5  z-10 text-start mb-8  opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-all duration-200 delay-75" set:html={props.short_desc || props.desc}>
+  </p>
+  <div
+    class="absolute z-10 flex items-center gap-4 px-2 py-1 transition-all bottom-8 end-7 group-focus:scale-110 group-hover:scale-110 group-hover:font-bold"
+  >
+    <div
+      class="transition-all group-focus:translate-x-3 group-hover:translate-x-3 group-focus:scale-x-125 group-hover:scale-x-125 group-hover:rotate-12 group-focus:rotate-12"
+    >
+      <Fragment set:html={arrow} />
+    </div>
+    <p class="text-[calc(.9rem+.5vw)] font-bold text-white">{content.lastNews.readMore}</p>
+  </div>
+  </div>
+
+</a>

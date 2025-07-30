@@ -1,0 +1,28 @@
+---
+import arrow from '~/assets/icons/green-arrow-icon.svg?raw';
+import type { StatObject } from '~/api/api';
+interface StaticsProps {
+  stat: StatObject;
+}
+const locale = Astro.currentLocale || 'ar';
+const { stat } = Astro.props as StaticsProps;
+
+---
+{ !(stat?.number && stat?.title)?null: <div
+  
+  class="relative flex flex-col items-center justify-between h-full gap-3 py-8 transition-all outline-none group rounded-2xl"
+>
+  <div class="flex flex-col gap-2">
+    <bdi class="text-yellow text-2xl xl:text-[40px] ltr:text-[calc(1.5rem+.5vw)]  rtl:2xl:text-[calc(2rem+2vw)]  font-light text-center" >
+      {stat?.number}+
+    </bdi>
+
+    <p class="rtl:text-[calc(.9rem+.5vw)]  whitespace-nowrap capitalize ltr:text-[calc(.9rem+.5vw)]  mt-4 text-center text-white font-medium">
+      {stat?.title[locale] || stat?.title['ar']}
+    </p>
+    <p class="text-xs text-center text-gray-100 capitalize text-opacity-70 2xl:text-sm">{stat?.short_desc[locale] || stat?.title['ar']}</p>
+  </div>
+  <!-- <div class="hidden transition-all group-focus:translate-x-5 group-hover:translate-x-5 md:block">
+    <Fragment set:html={arrow} />
+  </div> -->
+</div>}

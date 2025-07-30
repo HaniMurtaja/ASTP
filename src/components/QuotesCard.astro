@@ -1,0 +1,45 @@
+---
+import Image from 'astro/components/Image.astro';
+import icon from '../assets/icons/quote-icon.svg?raw';
+import arrow from '../assets/icons/green-arrow-icon.svg?raw';
+import content from '~/content/ar';
+import ImageWithFallback from './ui/ImageWithFallback.astro';
+
+const { title, short_desc, desc, img } = Astro.props;
+---
+
+<div
+  class="w-full h-full bg-gray-100 bg-opacity-90 outline-none xl:h-[32rem] xl:w-fit overflow-clip rounded-3xl isolate dark:bg-page group"
+>
+  <div class="relative grid items-center grid-cols-1 transition-all xl:grid-cols-2 ">
+    <div class="absolute w-full h-full xl:relative -z-10 ">
+      <div class="flex items-center justify-center w-full h-full rounded-lg">
+        <ImageWithFallback
+          alt={'pod'}
+          inferSize
+          src={img}
+          loading={'eager'}
+          class={'rounded-3xl w-full h-full xl:h-[32rem]  object-[50%_10%] md:object-center object-cover  transition-all duration-200 xl:aspect-[3/4]'}
+        />
+      </div>
+    </div>
+
+    <div
+      class="flex flex-col py-12  justify-center xl:justify-start items-start  bg-[rgba(0,0,0,.5)] xl:bg-[unset]  xl:h-auto ps-10 xl:px-5 gap-9 text-start xl:mt-0"
+    >
+      <div class="transition-all group-hover:scale-110 group-hover:brightness-50">
+        <Fragment set:html={icon} />
+      </div>
+
+      <div class="relative flex flex-col gap-3 brightness-110">
+        <p class="text-[28px] text-green xl:text-primary-light dark:text-green font-[600]">{title}</p>
+        <p class="text-white xl:text-[#585858] dark:text-gray-200 text-sm" set:html={short_desc}></p>
+      </div>
+
+      <div
+        class="px-2 text-xl prose text-white transition-all xl:text-primary dark:text-gray-100 xl:line-clamp-5 group-hover:overflow-y-auto "
+        set:html={desc?.replace(/style\s*=\s*(['"]).*?\1/gi, '')}
+      />
+    </div>
+  </div>
+</div>

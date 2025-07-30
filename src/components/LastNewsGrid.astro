@@ -1,0 +1,15 @@
+---
+import content from "~/content/ar";
+import type { NewsCardProps } from "./LastNewsCard.astro";
+import newsImg from "../assets/images/news-img.png";
+import LastNewsCard from "./LastNewsCard.astro";
+
+const data: NewsCardProps[] = Array(8)
+  .fill(null)
+  .map(() => ({
+    img: newsImg,
+    id: 1,
+    link: "#",
+    title: "الأقصى يمر بأخطر مرحلة تاريخية والتفاعل مع الأحداث صادم",
+  }));
+---

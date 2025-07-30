@@ -1,0 +1,49 @@
+---
+const { items = [] } = Astro.props;
+---
+
+<div
+  class="flex flex-row w-full gap-4 overflow-x-auto overflow-y-auto vertical-slider lg:overflow-x-hidden lg:flex-col lg:overflow-y-auto"
+>
+  {
+    items.map((item) => (
+      <div class="flex-shrink-0 p-4 bg-white rounded shadow slider-item lg:min-w-0 lg:w-full">
+        <img src={item.img} alt={item.title} class="object-contain w-full h-auto mb-2 rounded" />
+      </div>
+    ))
+  }
+</div>
+
+<style>
+  @media (min-width: 1024px) {
+    .vertical-slider {
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+      height: 50rem;
+    }
+  }
+  @media (max-width: 1023px) {
+    .vertical-slider {
+      flex-direction: row;
+      overflow-x: auto;
+      overflow-y: hidden;
+      height: auto;
+      max-width: 100%;
+    }
+    .slider-item {
+      min-width: 100%;
+    }
+  }
+</style>
+
+<script data-astro-rerun>
+  [...document.getElementsByClassName('vertical-slider')].map((elemnt) => {
+    return (elemnt.style.height = elemnt.offsetParent.getBoundingClientRect().height + 'px');
+  });
+  window.addEventListener('resize', () => {
+    [...document.getElementsByClassName('vertical-slider')].map((elemnt) => {
+      return (elemnt.style.height = elemnt.offsetParent.getBoundingClientRect().height + 'px');
+    });
+  });
+</script>

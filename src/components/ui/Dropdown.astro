@@ -1,0 +1,215 @@
+---
+type Props = {
+  name: string;
+  items: Array<Record<string, any>>;
+  placeholder?: string;
+  label?: string;
+  valueProp?: string;
+  itemProp?: string;
+  selectedItem?: Record<string, any>;
+  required?: boolean;
+  className?: string;
+  containerClass?: string;
+  translations?: {
+    validation: {
+      required: string;
+      invalidFormat: string;
+    };
+  };
+};
+
+const {
+  name,
+  items,
+  placeholder = '',
+  label = '',
+  valueProp = 'value',
+  itemProp = 'label',
+  selectedItem,
+  required = false,
+  className = '',
+  containerClass = '',
+  translations = {
+    validation: {
+      required: 'This field is required',
+      invalidFormat: 'Invalid format',
+    },
+  },
+} = Astro.props;
+---
+
+<div
+  id={`${name}-wrapper`}
+  class={`relative ${containerClass}`}
+  tabindex="0"
+>
+  <label for={name} class="block mb-2 text-sm font-medium text-gray-700 dark:text-white">
+    {label}{required && <span class="text-red-500">*</span>}
+  </label>
+
+  <!-- Hidden real-value field -->
+  <input
+    type="hidden"
+    name={name}
+    id={name}
+    value={selectedItem ? selectedItem[valueProp] : ''}
+    required={required}
+  />
+
+  <div class={`relative ${className}`}>
+    <!-- Search / display -->
+    <input
+      type="text"
+      id={`${name}-search`}
+      placeholder={placeholder}
+      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 dark:bg-gray-600 dark:text-white focus:ring-primary-light focus:border-transparent"
+      autocomplete="off"
+    />
+
+    <!-- Chevron -->
+    <svg
+      id={`${name}-chevron`}
+      class="absolute w-5 h-5 text-gray-500 transition-transform duration-300 transform -translate-y-1/2 end-2 top-1/2 dark:text-gray-300"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+
+    <!-- Options list -->
+    <ul
+      id={`${name}-list`}
+      class="absolute z-10 hidden w-full mt-1 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg max-h-60 dark:bg-gray-800 dark:border-gray-700"
+    >
+      {items.map(item => (
+        <li
+          data-value={item[valueProp]}
+          class="px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+          tabindex="-1"
+        >
+          {item[itemProp]}
+        </li>
+      ))}
+    </ul>
+  </div>
+</div>
+
+<script is:inline client:load define:vars={{ name, valueProp, itemProp, translations, required }}>
+  const wrapper     = document.getElementById(`${name}-wrapper`);
+  const searchInput = document.getElementById(`${name}-search`);
+  const hiddenInput = document.getElementById(name);
+  const listEl      = document.getElementById(`${name}-list`);
+  const chevron     = document.getElementById(`${name}-chevron`);
+
+  let highlightIndex = -1;
+  const getVisible = () =>
+    Array.from(listEl.querySelectorAll('li')).filter(li => !li.classList.contains('hidden'));
+
+  function clearHighlights() {
+    getVisible().forEach(li => li.classList.remove('bg-gray-200'));
+  }
+
+  function highlightItem(idx) {
+    clearHighlights();
+    const opts = getVisible();
+    if (opts[idx]) {
+      opts[idx].classList.add('bg-gray-200');
+      opts[idx].scrollIntoView({ block: 'nearest' });
+    }
+  }
+
+  function showList() {
+    listEl.classList.remove('hidden');
+    chevron.classList.add('rotate-180');
+  }
+  function hideList() {
+    listEl.classList.add('hidden');
+    chevron.classList.remove('rotate-180');
+    clearHighlights();
+    highlightIndex = -1;
+  }
+
+  // Close when focus leaves wrapper
+  wrapper.addEventListener('focusout', e => {
+    if (!wrapper.contains(e.relatedTarget)) hideList();
+  });
+
+  // Open/toggle
+  searchInput.addEventListener('focus', showList);
+  searchInput.addEventListener('click', e => {
+    e.stopPropagation();
+    listEl.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-180');
+  });
+
+  // Click outside → close
+  document.addEventListener('click', e => {
+    if (!wrapper.contains(e.target)) hideList();
+  });
+
+  // Filter on input
+  searchInput.addEventListener('input', () => {
+    const filter = searchInput.value?.toLowerCase();
+    listEl.querySelectorAll('li').forEach(li =>
+      li.classList.toggle('hidden', !li.textContent?.toLowerCase().includes(filter))
+    );
+    showList();
+    highlightIndex = -1;
+  });
+
+  // Keyboard navigation
+  searchInput.addEventListener('keydown', e => {
+    const opts = getVisible();
+    if (!opts.length) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        highlightIndex = (highlightIndex + 1) % opts.length;
+        highlightItem(highlightIndex);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        highlightIndex = (highlightIndex - 1 + opts.length) % opts.length;
+        highlightItem(highlightIndex);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (highlightIndex >= 0) opts[highlightIndex].click();
+        break;
+      case 'Escape':
+        hideList();
+        break;
+    }
+  });
+
+  // Prevent blur when clicking list
+  listEl.addEventListener('mousedown', e => e.preventDefault());
+
+  // Selection handler
+  listEl.addEventListener('click', e => {
+    const li = e.target.closest('li');
+    if (!li) return;
+    searchInput.value = li.textContent.trim();
+    hiddenInput.value  = li.dataset.value;
+    hideList();
+    searchInput.focus();
+  });
+
+  // Validation
+  searchInput.addEventListener('invalid', function () {
+    if (!this.value && required) this.setCustomValidity(translations.validation.required);
+    else this.setCustomValidity('');
+  });
+  searchInput.addEventListener('input', function () {
+    this.setCustomValidity('');
+  });
+</script>
+
+<style is:inline>
+  /* Always hidden by default */
+  #${name}-list { display: none; }
+  #${name}-list:not(.hidden) { display: block; }
+</style>

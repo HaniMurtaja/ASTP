@@ -1,0 +1,10 @@
+---
+import { fetchCountries } from '~/api';
+
+// return a json response with the list of parliaments depending on the current locale
+const countries_list = await fetchCountries(Astro.currentLocale || 'en');
+---
+
+<Fragment>
+  {JSON.stringify( countries_list.data.map(item=>item.translations))}
+</Fragment>

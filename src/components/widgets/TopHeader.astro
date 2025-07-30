@@ -1,0 +1,101 @@
+---
+import videoIcon from '~/assets/icons/video-icon.svg?raw';
+import searchIcon from '~/assets/icons/search-icon.svg?raw';
+import donateIcon from '~/assets/icons/donate-icon.svg?raw';
+import { getContentForLocale } from '~/utils/utils';
+import { fetchLocales } from '~/api';
+
+const currentLocale = Astro.currentLocale || 'ar';
+const content = await getContentForLocale(Astro.currentLocale);
+
+const localesObjects: { title: string; lang_code: string; direction: string }[] = (await fetchLocales(currentLocale))
+  ?.data || [
+  { title: 'ar', label: 'العربية', direction: 'rtl' },
+  { title: 'en', label: 'English', direction: 'ltr' },
+  { title: 'tr', label: 'Turkish', direction: 'ltr' },
+  { title: 'fr', label: 'French', direction: 'ltr' },
+  { title: 'de', label: 'German', direction: 'ltr' },
+  { title: 'es', label: 'Spanish', direction: 'ltr' },
+  { title: 'pt', label: 'Portuguese', direction: 'ltr' },
+  { title: 'it', label: 'Italian', direction: 'ltr' },
+  { title: 'ru', label: 'Russian', direction: 'ltr' },
+  { title: 'zh', label: 'Chinese', direction: 'ltr' },
+  { title: 'ja', label: 'Japanese', direction: 'ltr' },
+  { title: 'fa', label: 'Persian', direction: 'rtl' },
+  { title: 'ms', label: 'Malay', direction: 'ltr' },
+  { title: 'ur', label: 'Urdu', direction: 'rtl' },
+];
+
+const currentLocaleLabel = [
+  localesObjects.find((locale) => locale.lang_code?.toLocaleLowerCase() === currentLocale?.toLocaleLowerCase())?.title,
+];
+const otherLocales = localesObjects.filter(
+  locale => locale.lang_code?.toLowerCase() !== currentLocale.toLowerCase()
+);
+---
+
+<div class="relative z-[41] w-full py-4 bg-primary xl:bg-white main-padding max-width">
+  <div class="flex items-center justify-between w-full gap-4">
+    <div class="flex items-center gap-4">
+      <button
+        class="relative flex items-center justify-center h-8 gap-2 px-4 py-4 overflow-hidden rounded-full md:py-0 md:w-40 outline-cta bg-cta md:group"
+      >
+        <div
+          class="transition-all group-focus:absolute group-hover:absolute group-focus:end-1/2 group-hover:end-1/2 rtl:group-focus:-translate-x-1/2 rtl:group-hover:-translate-x-1/2 group-focus:translate-x-1/2 group-hover:translate-x-1/2"
+        >
+          <Fragment set:html={videoIcon} />
+        </div>
+        <div class="w-[2px] hidden md:block h-3/5 bg-white/20 group-focus:hidden group-hover:hidden">&nbsp;</div>
+        <p
+          class="hidden font-medium text-white transition-all md:block whitespace-nowrap group-focus:absolute ltr:group-focus:-translate-x-40 rtl:group-focus:translate-x-40 group-hover:absolute group-hover:-translate-x-40"
+        >
+          {content.header.live}
+        </p>
+      </button>
+      <button
+        class="relative flex items-center justify-center h-8 gap-2 px-4 py-4 overflow-hidden rounded-full md:py-0 md:w-40 outline-cta bg-cta md:group"
+      >
+        <div
+          class="transition-all group-focus:absolute group-hover:absolute group-focus:end-1/2 group-hover:end-1/2 rtl:group-focus:-translate-x-1/2 rtl:group-hover:-translate-x-1/2 group-focus:translate-x-1/2 group-hover:translate-x-1/2"
+        >
+          <Fragment set:html={donateIcon} />
+        </div>
+        <div class="w-[2px] h-3/5 hidden md:block bg-white/20 group-focus:hidden group-hover:hidden">&nbsp;</div>
+
+        <p
+          class="hidden font-medium text-white transition-all md:block whitespace-nowrap group-focus:absolute ltr:group-focus:-translate-x-40 rtl:group-focus:translate-x-40 group-hover:absolute group-hover:-translate-x-40"
+        >
+          {content.header.donate}
+        </p>
+      </button>
+    </div>
+    <div class="flex items-center gap-2">
+      <details class="relative z-50 grid text-xs place-content-center place-items-center">
+        <summary
+          class="grid max-w-[40ch] cursor-pointer text-end text-opacity-70 hover:underline text-white dark:text-muted capitalize font-bold text-base"
+        >
+          {currentLocaleLabel}
+        </summary>
+        <div
+          class="absolute right-0 w-40 mt-2 text-center bg-white border border-gray-200 rounded shadow-lg max-w-24 dark:border-gray-700 dark:bg-gray-800"
+        >
+          {
+            otherLocales.map((locale, index) => (
+              <a
+                class="block px-4 py-2 text-sm font-bold text-gray-700 capitalize hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                href={`/${locale.lang_code}`}
+              >
+                {locale.title}
+              </a>
+            ))
+          }
+        </div>
+      </details>
+      <div
+        class="p-4 rounded-lg cursor-pointer text-green hover:bg-primary focus:bg-primary hover:text-white focus:text-white bg-opacity-30"
+      >
+        <Fragment set:html={searchIcon} />
+      </div>
+    </div>
+  </div>
+</div>

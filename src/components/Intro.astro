@@ -1,0 +1,301 @@
+---
+import Image from 'astro/components/Image.astro';
+import mainImg from '../assets/images/bg.png';
+import mainImgMobile from '../assets/images/mob-header.png';
+import newsIcon from '../assets/icons/news-icon.svg?raw';
+import closeIcon from '../assets/icons/close-icon.svg?raw';
+import content from '~/content/ar';
+import Statistics from './Statistics.astro';
+import Navbar from './Navbar.astro';
+import type { SectionObject } from '~/api/api';
+import arrowIcon from '~/assets/icons/green-arrow-icon.svg?raw';
+import ImageWithFallback from './ui/ImageWithFallback.astro';
+
+let currentLocale = Astro.currentLocale;
+currentLocale = 'ar';
+
+export interface Props {
+  section: SectionObject;
+  id: string;
+  stats: SectionObject;
+}
+const { section, id } = Astro.props;
+const slides = section.sectionables.filter((sectionable) => sectionable.sectionable_type === 'App\\Models\\Slide');
+const stats = (
+  section.sectionables.filter((sectionable) => sectionable.sectionable_type === 'App\\Models\\Section')?.[0]
+    ?.sectionable as unknown as SectionObject
+).sectionables.map((item) => item.sectionable);
+const locale = Astro.currentLocale || 'ar';
+
+
+---
+
+<div
+dir={currentLocale === 'ar' ? 'rtl' : 'ltr'}
+  class="bg-primary dark:bg-page rounded-br-[30px] rounded-bl-[30px] main-padding w-full pt-12 flex items-center justify-center relative pb-12 z-10"
+>
+  <!-- Intro Start  -->
+  <div class="relative w-full h-full max-h-[100svmin]" >
+    <div class="w-full carousel-intro ltr:-scale-x-100 ">
+      {
+        slides.map((slide, index) => {
+          const media = slide.sectionable?.media?.[0]?.original_url || mainImg;
+          return (
+            <div class="w-full lg:ps-6  h-screen lg:max-h-[60rem] max-h-[100svmin]  relative isolate">
+              <div class="absolute top-0 w-full h-full start-0 -z-10 brightness-50 rounded-3xl overflow-clip">
+                <ImageWithFallback
+                  src={media}
+                  alt={slide.sectionable.title[locale] || slide.sectionable.title['ar']}
+                  priority={index === 0}
+                  lazy={index !== 0}
+                  inferSize
+                  class="w-full h-full xl:h-[inherit] xl:flex -z-50 object-cover  [object-position:left]"
+                  loading={'eager'}
+                />
+              </div>
+
+              <div class="absolute start-1/2  translate-x-1/2 ltr:lg:translate-x-0 rtl:lg:translate-x-0 lg:start-32 flex flex-col z-10  items-center pt-8 md:pt-0 md:justify-center h-full ltr:-scale-x-100 md:max-w-[64ch] max-w-[60ch]  md:ltr:max-w-[40ch]">
+                <p class="w-full text-xl text-center capitalize lg:text-2xl lg:text-start text-green">
+                  {slide.sectionable?.tagline?.[locale] || slide.sectionable?.tagline?.['ar']}
+                </p>
+                <h2
+                  class="text-3xl font-light text-center text-white capitalize ltr:text-xl lg:text-start lg:text-5xl ltr:lg:text-4xl pros text-balance"
+                  set:html={slide.sectionable?.title?.[locale] || slide.sectionable?.title?.['ar']}
+                />
+                <div class="flex items-center justify-center w-full gap-6 mx-auto mt-8 lg:justify-start ltr:flex-row-reverse">
+                  {!slide.sectionable.actions?.length
+                    ? null
+                    : slide.sectionable.actions.map((action) => (
+                        <a
+                          href={action.url}
+                          class="inline-flex items-center gap-2 px-0 py-3 transition-all border-b border-opacity-50 cursor-pointer me-8 hover:bg-opacity-80 focus:bg-opacity-50 group border-b-gray-100 hover:translate-x-1"
+                        >
+                          <div class="transition-all group-hover:translate-x-1 ltr:-scale-x-100">
+                            <Fragment set:html={arrowIcon} />
+                          </div>
+                          <span
+                            class="whitespace-nowrap capitalize text-[calc(.7rem+.5vw)] font-medium text-white lg:text-base"
+                          >
+                            {action.label[locale] || action.label['ar']}
+                          </span>
+                        </a>
+                      ))}
+                </div>
+              </div>
+            </div>
+          );
+        })
+      }
+    </div>
+
+    <div
+      class={` flex absolute end-0 ltr:start-0  md:h-1/3  xl:items-start bottom-0 z-10 w-full xl:w-[49%]  rounded-b-3xl overflow-clip xl:py-8 items-end`}
+    >
+      <div class="relative grid w-full grid-cols-3 xl:pb-8 backdrop-blur-md lg:absolute lg:bottom-0 2xl:bottom-5 3xl:bottom-11 gap-x-4">
+        {
+          stats?.map((item) => {
+            return <Statistics stat={item} />;
+          }) 
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script is:inline data-astro-rerun>
+  /**
+   * Initializes a responsive transform-origin and zigzag zoom effect on an image.
+   * While hovering, the transform-origin smoothly damps toward a target
+   * based on the mirrored mouse position. At the same time, as long as the mouse
+   * is moving, the target scale toggles (zigzags) between 1.5 and 1.3. The update
+   * is damped so that the current scale picks up from its last value and smoothly
+   * transitions toward the new target. When the mouse leaves, the targets become
+   * center (50% 50%) and the base scale (1.3).
+   *
+   * @param {HTMLImageElement} img - The image element to enhance.
+   */
+  (function () {
+    function initResponsiveImage(img) {
+      if (!img) return;
+
+      // Define our scale values.
+      const baseScale = 1;
+      const hoverScaleHigh = 1.4;
+      const hoverScaleLow = 1;
+
+      // Ensure inline transform-origin and transform are set.
+      if (!img.style.transformOrigin) {
+        img.style.transformOrigin = '50% 50%';
+      }
+      if (!img.style.transform) {
+        img.style.transform = `scale(${baseScale})`;
+      }
+
+      // Extract initial transform origin (default to center if invalid).
+      let [currentX, currentY] = img.style.transformOrigin.replaceAll('%', '').split(' ').map(Number);
+      if (isNaN(currentX) || isNaN(currentY)) {
+        currentX = 50;
+        currentY = 50;
+        img.style.transformOrigin = '50% 50%';
+      }
+
+      // Initialize scale values.
+      let currentScale = baseScale;
+      let targetScale = baseScale;
+
+      // Target values for transform-origin.
+      let targetX = currentX;
+      let targetY = currentY;
+
+      // Flags and variables.
+      let isHovering = false;
+      let rafId = null;
+
+      // For zigzag scaling: only toggle the target if a minimum delay has passed.
+      let lastToggleTime = 0;
+      const toggleDelay = 200; // milliseconds delay between scale toggles
+      // Track the last scale target (so we can alternate).
+      let lastScaleTarget = baseScale;
+
+      // Damping factor (0 < damping < 1) controls speed of transition.
+      const damping = 0.1;
+      const threshold = 0.1;
+      const scaleThreshold = 0.0001;
+
+      // The animation loop that damps both transform-origin and scale.
+      function updateProperties() {
+        const dx = targetX - currentX;
+        const dy = targetY - currentY;
+        const dScale = targetScale - currentScale;
+
+        currentX += dx * damping;
+        currentY += dy * damping;
+        currentScale += dScale * damping * 0.1;
+
+        img.style.transformOrigin = `${currentX.toFixed(2)}% ${currentY.toFixed(2)}%`;
+        img.style.transform = `scale(${currentScale.toFixed(3)})`;
+
+        const originDone = Math.abs(dx) < threshold && Math.abs(dy) < threshold;
+        const scaleDone = Math.abs(dScale) < scaleThreshold;
+
+        // Continue updating until both origin and scale are near their targets.
+        if (!originDone || !scaleDone) {
+          rafId = requestAnimationFrame(updateProperties);
+        } else {
+          // When the mouse has left and we're near defaults, clear inline styles.
+          if (
+            !isHovering &&
+            Math.abs(currentX - 50) < threshold &&
+            Math.abs(currentY - 50) < threshold &&
+            Math.abs(currentScale - baseScale) < scaleThreshold
+          ) {
+            img.style.transformOrigin = '50% 50%';
+            img.style.transform = 'scale(1)';
+            rafId = null;
+            return;
+          }
+          rafId = requestAnimationFrame(updateProperties);
+        }
+      }
+
+      // Schedule a new update if one isn't already running.
+      function scheduleUpdate() {
+        if (!rafId) {
+          rafId = requestAnimationFrame(updateProperties);
+        }
+      }
+
+      // On mouse move, update the target origin and—if enough time has passed—toggle the scale target.
+      function handleMouseMove(e) {
+        if (!isHovering) return;
+        const rect = img.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const percentX = (x / rect.width) * 100;
+        const percentY = (y / rect.height) * 100;
+
+        // Mirror the pointer’s position relative to the image’s center.
+        targetX = 100 - percentX;
+        targetY = 100 - percentY;
+
+        // Only toggle the scale if the mouse is moving and a delay has passed.
+        const now = Date.now();
+        if (now - lastToggleTime > toggleDelay) {
+          if (lastScaleTarget === hoverScaleHigh) {
+            targetScale = hoverScaleLow;
+            lastScaleTarget = hoverScaleLow;
+          } else {
+            targetScale = hoverScaleHigh;
+            lastScaleTarget = hoverScaleHigh;
+          }
+          lastToggleTime = now;
+        }
+        scheduleUpdate();
+      }
+
+      // On mouse enter, mark hovering and initialize the scale target.
+      function handleMouseEnter() {
+        isHovering = true;
+        lastToggleTime = Date.now();
+        // Start the cycle with the lower zoom.
+        lastScaleTarget = hoverScaleLow;
+        targetScale = hoverScaleHigh;
+        scheduleUpdate();
+      }
+
+      // On mouse leave, stop toggling and target center and base scale.
+      function handleMouseLeave() {
+        isHovering = false;
+        targetX = 50;
+        targetY = 50;
+        targetScale = baseScale;
+        scheduleUpdate();
+      }
+      const cleanup = () => {
+        img.removeEventListener('mousemove', handleMouseMove);
+        img.removeEventListener('mouseenter', handleMouseEnter);
+        img.removeEventListener('mouseleave', handleMouseLeave);
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = null;
+      };
+      img.addEventListener('mousemove', handleMouseMove);
+      img.addEventListener('mouseenter', handleMouseEnter);
+      img.addEventListener('mouseleave', handleMouseLeave);
+
+      return cleanup;
+    }
+
+    // --- wiring up the media query ---
+    const mq = window.matchMedia('(min-width: 1080px)'); // media query list  [oai_citation_attribution:0‡MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/Window/matchMedia?utm_source=chatgpt.com)
+    let cleanupImage;
+
+    function handleMQChange(e) {
+
+      const img = document.querySelector('.carousel-intro img');
+      if (!img) return;
+
+      if (e.matches) {
+        // viewport ≥ 1080px → initialize if not already
+        if (!cleanupImage) {
+          cleanupImage = initResponsiveImage(img);
+        }
+      } else {
+        // viewport < 1080px → tear down
+        if (cleanupImage) {
+          cleanupImage();
+          cleanupImage = null;
+        }
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      // run once on load
+      handleMQChange(mq);
+      // listen for changes (resize crosses the 1080px boundary)  [oai_citation_attribution:1‡MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web/API/MediaQueryList/change_event?utm_source=chatgpt.com)
+      mq.addEventListener('change', handleMQChange);
+      // add window resize listener
+      // window.addEventListener('resize', handleMQChange);
+    });
+  })();
+</script>

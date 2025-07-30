@@ -1,0 +1,27 @@
+---
+import type { HTMLTag } from "astro/types";
+import type { Widget } from "../types";
+import { twMerge } from "tailwind-merge";
+
+export interface Props extends Widget {
+  containerClass?: string;
+  ["as"]?: HTMLTag;
+}
+
+const { id, containerClass = "", as = "section" } = Astro.props;
+
+const WrapperTag = as;
+---
+
+<WrapperTag class="relative not-prose z-10 scroll-mt-[5rem]" {...id ? { id } : {}}>
+  <div
+    class:list={[
+      twMerge(
+        "relative mx-auto intersect-once intersect-quarter intercept-no-queue motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade",
+        containerClass
+      ),
+    ]}
+  >
+    <slot />
+  </div>
+</WrapperTag>

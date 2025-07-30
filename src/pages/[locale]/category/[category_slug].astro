@@ -1,0 +1,220 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+
+import { Image } from 'astro:assets';
+import mainBg from '~/assets/images/no-bg.webp';
+import video from '~/assets/icons/video-icon.svg?raw';
+import chart from '~/assets/icons/yearly-calendar-icon.svg?raw';
+import camera from '~/assets/icons/camera-icon.svg?raw';
+import data from '~/assets/icons/data-icon.svg?raw';
+import GridSection from '~/components/GridSection.astro';
+import { fetchCategoryPosts, fetchPage } from '~/api';
+import { getContentForLocale, prepareContentFromJsonOrHTMLString } from '~/utils/utils';
+import { Icon } from 'astro-icon/components';
+import ImageWithFallback from '~/components/ui/ImageWithFallback.astro';
+import MAIN_FOOTER from '~/components/home-page-sections/MAIN_FOOTER.astro';
+import Footer from '~/components/widgets/Footer.astro';
+import { footerData as FooterWithNoContent } from '~/navigation';
+
+const icons = [{ icon: video }, { icon: chart }, { icon: camera }, { icon: data }];
+
+const iconsSlugs = {
+  'video-graphic': icons[0],
+  infographic: icons[1],
+  'filmed-events': icons[2],
+  'pictorial-statements': icons[3],
+};
+
+const locale = Astro.currentLocale || 'ar';
+const page = new URL(Astro.request.url).searchParams.get('page');
+const currentSlug = Astro.params?.category_slug as keyof typeof iconsSlugs;
+const posts = await fetchCategoryPosts(page ? { page: Number(page), per_page: 12 } : 12, locale, currentSlug);
+//@TODO support english later
+const content = await getContentForLocale(locale);
+const metadata = {
+  title: content.meta.title,
+  description: content.meta.description,
+  ignoreTitleTemplate: true,
+};
+
+const currentCategory = posts?.data?.[0]?.category ;
+if(!currentCategory) return Astro.redirect(`/${locale}/notfound`,404);
+
+
+const homePage = (await fetchPage(1, locale)).data;
+
+const pageFooter = homePage.sections.find((section) => section.component === 'MAIN_FOOTER');
+const FooterComponent = pageFooter ? MAIN_FOOTER : Footer;
+const FooterProps = pageFooter ? { section: pageFooter } : FooterWithNoContent(content);
+---
+
+<Layout metadata={metadata}>
+  <Fragment slot="main">
+    <div class="relative w-full max-h-fit overflow-clip" data-cat-id={currentSlug}>
+      <div class="absolute w-full h-full min-h-full bg-opacity-50 isolate -z-10 overflow-clip bg-secondary">
+        <ImageWithFallback class="inset-0 object-cover w-full h-full" src={mainBg} alt="slide-bg" lazy inferSize />
+      </div>
+      <div class="container px-4 pt-10 pb-5 mx-auto md:px-20">
+        <div class="z-10 grid w-24 h-24 px-4 rounded-lg place-items-center bg-primary dark:bg-secondary">
+          {
+            iconsSlugs[currentSlug] ? (
+              <Fragment set:html={iconsSlugs[currentSlug]?.icon} />
+            ) : (
+              <Icon name="tabler:bookmark" class="w-full h-full " />
+            )
+          }
+        </div>
+        <h1 class="mt-2 text-3xl">
+          {currentCategory?.title[locale]}
+        </h1>
+        <p class="mt-6 max-w-[70ch] text-opacity-70">
+          {await getContentForLocale(locale).pages?.category?.description}
+        </p>
+      </div>
+    </div>
+    <div class="container px-4 mx-auto mt-20 md-px-20">
+      <!-- Violations -->
+      {
+        !posts?.data?.length ? (
+          <div class="grid place-items-center">{await getContentForLocale(locale)?.listings?.noContent}</div>
+        ) : (
+          <GridSection
+            id={'category-grid'}
+            title={currentCategory?.title[locale || 'ar']}
+            linkTitle={''}
+            items={posts.data.map((post) => ({
+              category: post.category?.title[locale || 'ar'],
+              title: post.title[locale || 'ar'],
+              summary: prepareContentFromJsonOrHTMLString(post.short_description[locale] || post.description[locale],locale,true).substring(0,200)+'...',
+              img: post.media?.[0]?.original_url || mainBg,
+              link: `/${locale}/post/${post.id}`,
+              date: post.created_at,
+            }))}
+          />
+        )
+      }
+      <div id="sentinel" class="py-10 mb-30 group">
+        <div
+          class="flex items-center justify-center w-12 h-12 p-1 mx-auto transition-all rounded-full opacity-0 duration:300 animate-bounce top-8 end-8 group-hover:opacity-100"
+        >
+          <Icon name="tabler:chevron-down" class="w-12 h-12 mx-auto text-primary animate-bounce" />
+          <div
+            class="absolute w-10 h-10 mb-2 border-2 rounded-full opacity-0 border-primary animate-ping group-hover:opacity-100"
+          >
+          </div>
+          <div
+            class="absolute w-10 h-10 mb-2 border-2 rounded-full opacity-0 border-primary animate-ping group-hover:opacity-100"
+          >
+          </div>
+        </div>
+      </div>
+      <script
+        data-astro-rerun
+        define:vars={{
+          currentLocale: locale,
+          categorySlug: Astro.params.category_slug,
+        }}
+      >
+        let currentPage = 1;
+        const gridContainer = document.querySelector('#category-grid'); // Your grid container element
+
+        async function loadMorePosts() {
+          currentPage++;
+          const response = await fetch(
+            `${window.location.origin}/${currentLocale}/partials/category/${categorySlug}?page=${currentPage}`
+          );
+          if (response.ok) {
+            const html = await response.text();
+            // Create a temporary element and append its child nodes to the grid
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            while (tempDiv.firstChild) {
+              gridContainer.appendChild(tempDiv.firstChild);
+            }
+          } else {
+            console.error('Failed to load more posts');
+          }
+        }
+
+        // Example using Intersection Observer:
+        const sentinel = document.querySelector('#sentinel'); // Element at the bottom of your grid
+        const observer = new IntersectionObserver((entries) => {
+          if (entries[0].isIntersecting) {
+            loadMorePosts();
+          }
+        });
+        observer.observe(sentinel);
+      </script>
+      <div>
+        <!-- Render pagination controls using Tailwind CSS
+    <nav class="flex justify-center my-10 space-x-4">
+      {
+        meta.prev_page_url ? (
+          <a
+            href={meta.prev_page_url.replace(meta.path, currentUrl)}
+            class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            Previous
+          </a>
+        ) : (
+          <span class="px-4 py-2 text-gray-500 bg-gray-100 rounded">
+            Previous
+          </span>
+        )
+      }
+      {
+        meta.links.map((link) =>
+          !link.active && link.url ? (
+            <a
+              href={link.url.replace(meta.path, currentUrl)}
+              class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+            >
+              {link.label}
+            </a>
+          ) : (
+            <span class="px-4 py-2 text-gray-500 bg-gray-100 rounded">
+              {link.label}
+            </span>
+          )
+        )
+      }
+      {
+        meta.next_page_url ? (
+          <a
+            href={meta.next_page_url.replace(meta.path, currentUrl)}
+            class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            Next
+          </a>
+        ) : (
+          <span class="px-4 py-2 text-gray-500 bg-gray-100 rounded">Next</span>
+        )
+      }
+    </nav> -->
+      </div>
+    </div>
+  </Fragment>
+  <Fragment slot="footer">
+    <FooterComponent {...FooterProps} />
+  </Fragment>
+</Layout>
+<script is:inline>
+  document.addEventListener('astro:page-load', () => {
+    const hash = window.location.hash;
+    if (hash) {
+      const element = document.querySelector(hash);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  });
+  window.addEventListener('hashchange', () => {
+    const hash = window.location.hash;
+    if (hash) {
+      const element = document.querySelector(hash);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  });
+</script>

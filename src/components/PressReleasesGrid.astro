@@ -1,0 +1,18 @@
+---
+import content from "~/content/ar";
+import newsImg from "../assets/images/press-img.png";
+import avatar from "../assets/images/avatar.png";
+import PressReleasesCard from "./PressReleasesCard.astro";
+
+const data = Array(8)
+  .fill(null)
+  .map(() => ({
+    img: newsImg,
+    id: 1,
+    link: "#",
+    title: "الأقصى يمر بأخطر مرحلة تاريخية",
+    date: " 12 يناير 2025",
+    desc: "تُعرب رابطة برلمانيون لأجل القدس وفلسطين عن إدانتها الشديدة لاقتحام وزير الأمن القومي الإسرائيلي المتطرف، إيتمار بن غفير، للمسجد الأقصى المبارك.",
+
+  }));
+---

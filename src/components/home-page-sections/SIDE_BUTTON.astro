@@ -1,0 +1,23 @@
+---
+import newsIcon from '~/assets/icons/news-icon.svg?raw';
+const locale = Astro.currentLocale || 'ar';
+const { section } = Astro.props;
+if (!section || !section.sectionables || section.sectionables.length === 0 || !section.sectionables[0]?.sectionable?.slug) {
+  return null;
+}
+---
+
+<div class="absolute top-0 h-full end-0 w-fit min-w-44">
+  <a href={`/${locale}/post/${section.sectionables[0]?.sectionable?.slug}`}>
+    <span
+      class="sticky z-50 items-center justify-center hidden h-12 gap-3 px-4 overflow-hidden text-white transition-all origin-right rotate-90 -translate-x-6 rtl:origin-left rtl:translate-x-6 rtl:-rotate-90 top-2/3 ms-6 max-w-fit group bg-primary-light xl:flex ltr:rotate-360 rounded-br-xl rounded-bl-xl hover:bg-yellow focus:bg-yellow"
+    >
+      <div class="delay-[50ms]">
+        <Fragment set:html={newsIcon} />
+      </div>
+      <p class="text-2xl" title={section.description[locale] || section.description['ar']}>
+        {section.title[locale] || section.title['ar']}
+      </p>
+    </span>
+  </a>
+</div>

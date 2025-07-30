@@ -1,0 +1,129 @@
+---
+import { Image } from 'astro:assets';
+import footerImg from "../assets/images/footer-img.png";
+import logo from "../assets/icons/footer-logo.svg?raw";
+import chat from "../assets/icons/chat-icon.svg?raw";
+import extraLogo from "../assets/icons/footer-extra-icon.svg?raw";
+import FooterInfoSection from "./FooterInfoSection.astro";
+import content from "~/content/ar";
+import { fetchFooterMenu, fetchMainMenu } from "~/api";
+import ImageWithFallback from './ui/ImageWithFallback.astro';
+
+const locale = Astro.currentLocale;
+// Function to fetch category data from the API
+
+const menu = await fetchFooterMenu();
+// swap the order of the first two items
+// Transform the menu data to group children under their parents
+let menuData = menu.data
+  .reduce((acc, item) => {
+    if (!item.parent_id) {
+      // This is a parent item
+      // Find any children that have this item's id as their parent_id
+      const children = menu.data.filter((child) => child.parent_id === item.id);
+      return [...acc, { ...item, children }];
+    }
+    // Skip children as they'll be included under their parents
+    return acc;
+  }, [])
+  .sort((a, b) => a.position - b.position);
+if (menuData.length) {
+  menuData.forEach((item) => {
+    if (item.children) {
+      item.children.sort((a, b) => a.position - b.position);
+    }
+  });
+}
+---
+
+<footer>
+  <div class={"relative"}>
+    <ImageWithFallback
+      class={"w-full h-[100px] xl:h-auto object-cover"}
+      src={footerImg}
+      alt={"footer-ex"}
+      loading={"lazy"}
+    />
+
+    <button
+      class="absolute outline-none hover:bg-yellow focus:bg-yellow transition-all -top-10 xl:-top-12 px-4 py-2 start-3 xl:start-32 bg-primary-light text-white xl:text-2xl rounded-tr-[10px] rounded-tl-[10px]"
+    >
+      {content.footer.members}
+    </button>
+  </div>
+
+  <div
+    class="main-padding bg-primary relative pt-[30px] xl:pt-[75px] pb-[20px]"
+  >
+    <div class="flex flex-col items-start xl:flex-row gap-x-4 xl:gap-x-20">
+      <!--CORNER SVG EXTRA  -->
+      <div class="absolute hidden xl:block end-0 ltr:-scale-100">
+        <Fragment set:html={extraLogo} />
+      </div>
+
+      <div
+        class="relative flex items-center justify-center w-full xl:flex-col xl:items-start xl:justify-between xl:w-auto"
+      >
+        <a
+          href="/"
+          class="flex items-center justify-center scale-50 xl:scale-100"
+        >
+          <Fragment set:html={logo} />
+        </a>
+
+        <button
+          class="absolute end-0 xl:relative w-[50px] h-[50px] xl:w-[100px] xl:h-[100px] xl:mt-32 xl:start-0 rounded-full bg-yellow flex items-center justify-center"
+        >
+          <div class="scale-50 xl:scale-100">
+            <Fragment set:html={chat} />
+          </div>
+        </button>
+      </div>
+
+      <div
+        class="grid grid-cols-2 lg:grid-cols-3 grid-rows-2 w-full xl:w-[45%] gap-y-14"
+      >
+        {
+          menu.map((footer) => {
+            return <FooterInfoSection {...footer} />;
+          })
+        }
+      </div>
+    </div>
+    <div class="w-full xl:w-2/3 h-[0.5px] bg-green mt-10 opacity-20"></div>
+    <p
+      class="text-[#44D99A] text-xs xl:text-[15px] mt-4 text-center xl:text-start"
+    >
+      {content.footer.rights}
+    </p>
+  </div>
+</footer>
+<script  >
+document.addEventListener('astro:page-load', () => {
+  const footer = document.querySelector('footer');
+  const footerHeight = footer?.offsetHeight || 0;
+  const footerSpacer = document.querySelector('.footer-place-holder') as HTMLElement;
+  const footerSpacerImage = document.querySelector('.footer-place-holder img') as HTMLElement;
+  if(!footerSpacer || footerSpacerImage){
+    console.error('could not find the footer spacer elements .footer-place-holder .footer-place-holder img , skipping... ')
+    return;
+  }
+  // add a div that has the same height as the footer element after the body>main element
+  footerSpacer.style.height = `${footerHeight * 1.5}px`;
+  // footerSpacer.style.pointerEvents = "none";
+  // i need to insert it between the main and footer
+  footerSpacerImage.style.height = `${footerHeight * 0.55}px`;
+  document.body.insertBefore(footerSpacer, footer);
+  // add window resize event listener to update the height of the spacer
+  window.addEventListener('resize', () => {
+    footerSpacerImage.style.height = `${footerHeight * 0.55}px`;
+    footerSpacer.style.height = `${footerHeight * 1.5}px`;
+  });
+
+  // for accessibilty whenever the user tabs into the footer to any focusable element in it
+  // we wanna scroll the page into its max to view the footer content
+  footer?.addEventListener('focusin', () => {
+    window.scrollTo(0, document.body.scrollHeight);
+  });
+});
+</script>

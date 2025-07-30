@@ -1,0 +1,53 @@
+.carousel-podcast .flickity-button {
+  color: white;
+}
+.flickity-button{
+  background-color: transparent !important;
+}
+.carousel-news .flickity-button,
+.carousel-activities .flickity-button,
+.carousel-media .flickity-button,
+.carousel-press .flickity-button,
+.carousel-quotes .flickity-button {
+  color: #d2ac68;
+}
+
+.flickity-button {
+  top: -45px !important;
+}
+
+.carousel-podcast .flickity-button:hover {
+  border-radius: 10px !important;
+  background: #00a19b;
+}
+
+.flickity-prev-next-button.previous {
+  inset-inline-end: 100px !important;
+  inset-inline-start: auto !important;
+}
+
+@layer components {
+  .carousel-news .flickity-button:hover,
+  .carousel-activities .flickity-button:hover,
+  .carousel-media .flickity-button:hover,
+  .carousel-press .flickity-button:hover,
+  .carousel-quotes .flickity-button:hover {
+    border-radius: 10px !important;
+    @apply bg-yellow;
+    color: white;
+  }
+
+  .flickity-page-dots .dot {
+    background: white;
+    transform: translateY(10px);
+  }
+  
+  .carousel-intro strong{
+    @apply font-bold;
+  }
+  
+
+}
+
+
+

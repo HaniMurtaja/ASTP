@@ -1,0 +1,23 @@
+---
+interface FooterData {
+  link: string;
+  title: string;
+}
+
+const props = Astro.props as FooterData[];
+---
+
+<div class="flex flex-col gap-3 text-center xl:text-start">
+  {
+    Object?.values(props)?.map((item, i) => {
+      return (
+        <a
+          href={item.link}
+          class={`${i === 0 ? "text-[#90D5AC] font-[600]" : "text-[#E2E7F5]"}`}
+        >
+          {item.title}
+        </a>
+      );
+    })
+  }
+</div>

@@ -1,0 +1,304 @@
+---
+import { Icon } from 'astro-icon/components';
+import Image from 'astro/components/Image.astro';
+import footerImg from '~/assets/images/footer-img.png';
+import logo from '~/assets/icons/footer-logo.svg?raw';
+import chat from '~/assets/icons/chat-icon.svg?raw';
+import extraLogo from '~/assets/icons/footer-extra-icon.svg?raw';
+import type { MenuObject, SectionObject } from '~/api/api';
+import { getContentForLocale } from '~/utils/utils';
+import ImageWithFallback from '../ui/ImageWithFallback.astro';
+
+export interface Props {
+  section: SectionObject;
+  id: string;
+  theme?: string;
+}
+
+const { section, theme = 'light' } = Astro.props;
+const locale = Astro.currentLocale || 'ar';
+const content = await getContentForLocale(locale);
+// const memberships  = await Astro.slots.render("footer");
+
+const footerMenusData = section.sectionables.filter(
+  (sectionable) => sectionable.sectionable_type === 'App\\Models\\FooterMenu'
+);
+const socialMediaLinksData = JSON.parse(
+  (section.sectionables.find((sectionable) => sectionable?.sectionable?.name === 'social_media')
+    ?.payload as unknown as string) ?? '{}'
+);
+
+const memberships = section.sectionables.find((sectionable) => sectionable.sectionable.component === 'FOOTER_OVERLAY')
+  ?.sectionable as SectionObject;
+const menusData = footerMenusData
+  ? footerMenusData.map((menuSection) => menuSection.sectionable as MenuObject).sort((a, b) => a.position - b.position)
+  : [];
+---
+
+<div class="relative z-10">
+  <div class={'relative z-10 footer-place-holder h-72 rounded-0 overflow-hidden  pointer-events-none isolate'}>
+    <ImageWithFallback
+      class={'w-full absolute h-full lg:h-[38%] xl:h-auto object-cover dark:brightness-75 object-[10%_0%] bg-page pointer-events-none -z-10'}
+      src={footerImg}
+      alt={'footer-ex'}
+      loading={'lazy'}
+    />
+    <div
+      class="relative my-10 flex gap-8 [animation-delay:3s] animate-fade lg:max-h-[22%] mx-auto max-h-max lg:max-w-screen-xl xl:max-w-screen-2xl w-full overflow-hidden"
+    >
+      <div
+        class={`flex justify-center min-w-[200vw]  lg:gap-8 lg:mx-8 dark:brightness-75 [animation-duration:20s] ${locale === 'ar' ? 'animate-scroll-reverse' : 'animate-scroll'}  `}
+      >
+        {
+          memberships.sectionables?.[0]?.sectionable?.media_libraries
+            ?.filter((media) => !!media.media)
+            .map(({ media, title }, i) => {
+              return (
+                <div class={`shrink-0 ${i === 0 ? '' : 'ms-4'}`}>
+                  <ImageWithFallback
+                    src={media?.[0]?.original_url}
+                    inferSize
+                    alt={title[locale] || title['ar']}
+                    class="object-contain max-h-[50%] md:max-h-full min-w-[calc(100vw/6)] md:h-full "
+                  />
+                </div>
+              );
+            })
+        }
+        {
+          memberships.sectionables?.[0]?.sectionable?.media_libraries
+            ?.filter((media) => !!media.media)
+            .map(({ media, title }, i) => {
+              return (
+                <div class={`shrink-0 ${i === 0 ? '' : 'ms-4'}`}>
+                  <ImageWithFallback
+                    src={media?.[0]?.original_url}
+                    inferSize
+                    alt={title[locale] || title['ar']}
+                    class="object-contain max-h-[50%] md:max-h-full  min-w-[calc(100vw/6)] md:h-full "
+                  />
+                </div>
+              );
+            })
+        }
+        {
+          memberships.sectionables?.[0]?.sectionable?.media_libraries
+            ?.filter((media) => !!media.media)
+            .map(({ media, title }, i) => {
+              return (
+                <div class={`shrink-0 ${i === 0 ? '' : 'ms-4'}`}>
+                  <ImageWithFallback
+                    src={media?.[0]?.original_url}
+                    inferSize
+                    alt={title[locale] || title['ar']}
+                    class="object-contain max-h-[50%] md:max-h-full min-w-[calc(100vw/6)] md:h-full "
+                  />
+                </div>
+              );
+            })
+        }
+      </div>
+    </div>
+
+    <style>
+      @media screen and (max-width: 768px ){
+        @keyframes scroll {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-100%);
+          }
+        }
+        @keyframes rtlscroll {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+          .animate-scroll {
+        animation: scroll 20s ease-in-out infinite;
+      }
+      .animate-scroll-reverse {
+        animation: rtlscroll 20s ease-in-out infinite;
+      }
+      }
+      @media screen and  (min-width: 1024px) {
+        @keyframes scroll {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+        @keyframes rtlscroll {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(50%);
+          }
+        }
+        .animate-scroll {
+        animation: scroll 20s linear infinite;
+      }
+      .animate-scroll-reverse {
+        animation: rtlscroll 20s linear infinite;
+      }
+      }
+    
+
+      @media (prefers-reduced-motion) {
+        .animate-scroll {
+          animation: none;
+        }
+      }
+    </style>
+  </div>
+  <a
+    href="#"
+    class="absolute px-4 py-2 text-white transition-all outline-none dark:brightness-75 rounded-t-md hover:bg-yellow focus:bg-yellow -top-10 xl:-top-12 start-3 xl:start-32 bg-primary-light xl:text-2xl"
+  >
+    {memberships.title[locale] || memberships.title['ar']}
+  </a>
+</div>
+
+<footer
+  class:list={[
+    { dark: theme === 'dark' },
+    'md:fixed w-full bottom-0 -z-10 isolate  not-prose bg-primary text-primary-light',
+  ]}
+>
+  <!--CORNER SVG EXTRA  -->
+  <div class="absolute bottom-0 z-10 hidden xl:block end-0 ltr:-scale-x-100">
+    <Fragment set:html={extraLogo} />
+  </div>
+  <div class="absolute inset-0 pointer-events-none dark:bg-dark" aria-hidden="true"></div>
+  <div
+    class="relative max-w-screen-xl px-4 mx-auto sm:px-6 dark:text-slate-300 intersect-once intersect-quarter intercept-no-queue motion-safe:md:opacity-0 motion-safe:md:intersect:animate-fade"
+  >
+    <div class="grid grid-cols-12 gap-4 py-8 gap-y-8 sm:gap-8 md:py-12">
+      <div class="col-span-12 lg:col-span-4">
+        <div
+          class="relative flex items-center justify-center w-full xl:flex-col xl:items-start xl:justify-between xl:w-auto"
+        >
+          <a href="/" class="flex items-center justify-center scale-50 xl:scale-100">
+            <Fragment set:html={logo} />
+          </a>
+        </div>
+      </div>
+      <div class="grid w-full grid-cols-2 col-span-12 lg:col-span-8 md:grid-cols-2 lg:grid-cols-3">
+        {
+          menusData.map((menu) => (
+            <div class="">
+              <div class="mb-2 font-medium text-green">{menu.title[locale] || menu.title['ar']}</div>
+              {menu.children && Array.isArray(menu.children) && menu.children.length > 0 && (
+                <ul class="text-sm">
+                  {menu?.children?.map((link) => (
+                    <li class="mb-2">
+                      <a
+                        class="text-gray-200 transition duration-150 ease-in-out hover:text-white hover:underline dark:text-gray-400"
+                        href={link.category_id ? `/category/${link.category_id}` : link.url}
+                        aria-label={'navigation link to ' + link.title[locale] || link.title['ar']}
+                      >
+                        <Fragment set:html={link.title[locale] || link.title['ar']} />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))
+        }
+      </div>
+    </div>
+    <div
+      class="w-3/4 py-6 border-t md:flex md:items-center md:justify-between md:py-2 border-primary-light border-opacity-10"
+    >
+      {
+        socialMediaLinksData?.length ? (
+          <ul class="flex mb-4 -ml-2 md:order-1 md:ml-4 md:mb-0 rtl:ml-0 rtl:-mr-2 rtl:md:ml-0 rtl:md:mr-4">
+            {socialMediaLinksData.map(({ ariaLabel, href, text, icon }) => (
+              <li>
+                <a
+                  class="text-white dark:text-gray-400  hover:opacity-75 focus:opacity-75  focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5 inline-flex items-center"
+                  aria-label={ariaLabel}
+                  href={href}
+                >
+                  {icon && <Icon name={icon} class="w-5 h-5" />}
+                  <Fragment set:html={text} />
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          ''
+        )
+      }
+
+      <!-- <div class="mr-4 text-sm text-primary-light dark:text-muted">
+        <Fragment set:html={footNote} />
+      </div>
+      <div class="flex gap-1 text-sm text-primary-light">
+        {
+          secondaryLinks.map(({ text, href }, index) => (
+            <>
+              {index !== 0 ? ' · ' : ''}
+              <a
+                class="transition duration-150 ease-in-out text-primary-lght hover:opacity-75 dark:opacity-75 hover:underline"
+                href={href}
+                set:html={text}
+              />
+            </>
+          ))
+        }
+      </div> -->
+    </div>
+  </div>
+</footer>
+<button
+  title="whatsapp"
+  class="fixed bottom-8 z-50 end-8 w-[50px] h-[50px] xl:w-[100px] xl:h-[100px] rounded-full bg-yellow flex items-center justify-center"
+>
+  <div class="scale-50 xl:scale-100">
+    <Fragment set:html={chat} />
+  </div>
+</button>
+
+<script is:inline>
+  document.addEventListener('astro:page-load', () => {
+    const footer = document.querySelector('footer');
+    const footerSpacer = document.querySelector('.footer-place-holder');
+ 
+    const footerSpacerImage = document.querySelector('.footer-place-holder img');
+    if(!footer || !footerSpacer || !footerSpacerImage) return;
+    function handleFooterResize() {
+      // Skip if screen width is mobile
+      if (window.innerWidth <= 1000) {
+        footerSpacer.style.height = '';
+        footerSpacerImage.style.height = '';
+        return;
+      }
+
+      const footerHeight = footer?.offsetHeight || 0;
+      footerSpacer.style.height = `${footerHeight * 1.5}px`;
+      footerSpacerImage.style.height = `${footerHeight * 0.55}px`;
+    }
+
+    // Initial setup
+    handleFooterResize();
+
+    document.body.insertBefore(footerSpacer, footer);
+
+    // Handle window resize
+    window.addEventListener('resize', handleFooterResize);
+
+    // Accessibility: scroll to bottom when focusing footer elements
+    footer?.addEventListener('focusin', () => {
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+  });
+</script>
