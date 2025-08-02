@@ -17,7 +17,7 @@ import langaugeIcon from '~/assets/icons/language-icon.svg?raw';
 import { getContentForLocale } from '~/utils/utils';
 /*
   Ensure you have access to the current locale.
-  Here we default to "ar" if Astro.currentLocale isn’t set.
+  Here we default to "ar" if Astro.currentLocale isnâ€™t set.
 */
 const locale = Astro.currentLocale;
 // Function to fetch category data from the API
@@ -75,7 +75,7 @@ const mainMenu = [
         .map((menu) => ({
           id: menu.id,
           text: menu.title[locale] || menu.title.ar,
-          href: menu.category_id ? `/${locale}#category_${menu.category_id}` : menu.url,
+          href: menu.category_id ? `/${locale}#${menu.category?.slug}` : menu.url,
           children: (menu.children || []).map((sub) => ({
             id: sub.id,
             text: sub.title[locale] || sub.title.ar,
@@ -87,7 +87,7 @@ const currentLocale = Astro.currentLocale || 'ar';
 const content = await getContentForLocale(currentLocale);
 const localesObjects: { title: string; lang_code: string; direction: string }[] = (await fetchLocales(locale))
   ?.data || [
-  { title: 'ar', label: 'العربية', direction: 'rtl' },
+  { title: 'ar', label: 'Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©', direction: 'rtl' },
   { title: 'en', label: 'English', direction: 'ltr' },
   { title: 'tr', label: 'Turkish', direction: 'ltr' },
   { title: 'fr', label: 'French', direction: 'ltr' },
@@ -103,7 +103,6 @@ const localesObjects: { title: string; lang_code: string; direction: string }[] 
   { title: 'ur', label: 'Urdu', direction: 'rtl' },
 ];
 
-console.log({localesObjects},{depth:null})
 
 const currentLocaleLabel = 
   localesObjects.find((locale) => locale.lang_code?.toLocaleLowerCase() === currentLocale?.toLocaleLowerCase())?.title
@@ -171,7 +170,7 @@ const otherLocales = localesObjects.filter(
 
     <div class="flex items-center justify-between w-full gap-5 xl:w-auto xl:justify-center">
       <button
-        class="outline-none overflow-hidden relative group hidden xl:flex h-8 bg-cta w-[8.8rem] rounded-full items-center justify-center gap-2"
+        class="outline-none overflow-hidden relative group hidden xl:flex h-12 px-4 bg-cta w-[9rem] rounded-full items-center justify-center gap-2"
       >
         <div
           class="w-8 scale-105 z-10 opacity-0 group-focus:opacity-100 group-hover:opacity-100 transition-all translate-y-3 group-focus:-translate-y-3 group-hover:-translate-y-3 h-8 items-center justify-center absolute start-3 -bottom-5 rotate-[20deg]"
@@ -191,7 +190,7 @@ const otherLocales = localesObjects.filter(
         </div>
         <div class="h-2/3 w-[1px] group-focus:hidden group-hover:hidden bg-white/30"></div>
         <p
-          class="font-medium text-white transition-all group-focus:absolute group-hover:absolute group-focus:-translate-x-28 group-hover:-translate-x-28"
+          class="font-medium text-white transition-all whitespace-nowrap group-focus:absolute group-hover:absolute group-focus:-translate-x-28 group-hover:-translate-x-28"
         >
           {content.header.donate}
         </p>

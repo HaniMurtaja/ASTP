@@ -26,6 +26,7 @@ import Footer from '~/components/widgets/Footer.astro';
 import { footerData as FooterWithNoContent } from '~/navigation';
 import POSTS from '~/components/home-page-sections/POSTS.astro';
 import POSTSCATEGORY from '~/components/home-page-sections/POSTS_CATEGORY.astro';
+import type { CategoryObject } from '~/api/api';
 
 const locale = Astro.currentLocale;
 const content = await getContentForLocale(locale);
@@ -72,6 +73,8 @@ const FooterProps = pageFooter ? { section: pageFooter } : FooterWithNoContent(c
 if(!currentPage) {
 return Astro.redirect(`/${locale}/notfound`,404)
 }
+
+
 ---
 
 
@@ -83,17 +86,18 @@ return Astro.redirect(`/${locale}/notfound`,404)
       currentPage?.sections
         .filter((section) => !!section.sectionables.length)
         .map(function (section) {
+
           // App\\Models\\Category
           // section.sectionables[0].sectionable.sectionable_type === 'App\\Models\\Category'
           const Component = GetHomePageSectionComponent(section.component as keyof typeof HOME_PAGE_SECTION_TYPES);
+         const categorySectionable = section.sectionables.find(sectionable => sectionable.sectionable_type === 'App\\Models\\Category');
           return (
             <SectionWrapper
-              id={`category_${section.sectionables[0].sectionable_type === 'App\\Models\\Category' ? section.sectionables[0].sectionable_id : ''}`}
+            id={`${ categorySectionable? (categorySectionable.sectionable as CategoryObject).slug : ''}`}
             >
               <Component
                 {...{
-                  section,
-                  id: `category_${section.sectionables[0].sectionable_type === 'App\\Models\\Category' ? section.sectionables[0].sectionable_id : section.id}`,
+                  section
                 }}
               />
             </SectionWrapper>
