@@ -195,7 +195,7 @@ const parlimitariansToShow =
           valueProp="id"
           itemProp="label"
         />
-        <!-- ParlimantType -->
+        <!-- ParlimantType 
         <Dropdown
           name="parliament_type"
           label={'نوع البرلمان'}
@@ -203,7 +203,7 @@ const parlimitariansToShow =
           items={parliamantTypes[locale].map((item) => ({ label: item }))}
           valueProp="label"
           itemProp="label"
-        />
+        /> -->
         <div>
           <!--  agree -->
           <input type="hidden" name="parliament_agree_checkbox" value="true" />
@@ -405,7 +405,7 @@ document.addEventListener('astro:page-load', function() {
       const petitionUuid    = data.get('petition_uuid');
       const name            = data.get('parliament_name');
       const email           = data.get('parliament_email');
-      const parliamentType  = data.get('parliament_type');
+   //   const parliamentType  = data.get('parliament_type');
       const countryId       = data.get('country_id');
       const phoneNumber     = data.get('phone_number');
       const phonePrefix     = data.get('phone_prefix');
